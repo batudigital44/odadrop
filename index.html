@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OdaDrop — Boş Odanı Yarına Bırakma.</title>
+<style>
+/* ---- assets/style.css (inline) ---- */
+/* =========================================================================
+   OdaDrop — paylaşılan tasarım sistemi.
+   TEK tema: müşteri, otel paneli ve admin paneli aynı sayfada, aynı renk ve
+   bileşen dilini kullanır (bkz. index.html — tek dosyada üç sekme).
+   Mobile-first: temel kurallar mobil, masaüstü @media (min-width:900px).
+   ========================================================================= */
+
+:root{
+  --bg:#fbf7f2; --surface:#ffffff; --surface-2:#f6efe4;
+  --text:#1c1a17; --text-muted:#6b6058; --text-faint:#9c9188;
+  --border:#ece2d3;
+  --brand:#ff5a36; --brand-dark:#c73e1d; --brand-50:#fff1ea; --brand-100:#ffdccc;
+  --ink:#122b2c;
+  --success:#1c9a6c; --success-bg:#e4f6ee;
+  --danger:#e0303f; --danger-bg:#fde7e9;
+  --warning:#b3760a; --warning-bg:#fdf1dc;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 8px 26px rgba(23,21,18,0.08);
+  --shadow-lg:0 22px 54px rgba(23,21,18,0.20);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+h1,h2,h3,h4{margin:0;line-height:1.2;font-weight:800;letter-spacing:-0.02em;}
+p{margin:0;}
+img{max-width:100%;display:block;}
+.container{max-width:1180px;margin:0 auto;padding:0 18px;}
+@media (min-width:900px){ .container{padding:0 32px;} }
+
+/* ---------- logo & brand ---------- */
+.logo{display:inline-flex;align-items:center;gap:6px;font-size:19px;letter-spacing:-0.02em;}
+.logo-mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-dark));position:relative;flex:none;}
+.logo-mark::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);}
+.logo-oda{font-weight:400;color:var(--text);}
+.logo-drop{font-weight:800;color:var(--brand);}
+
+/* ---------- top nav ---------- */
+.topnav{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);}
+.topnav-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;max-width:1180px;margin:0 auto;}
+@media (min-width:900px){ .topnav-inner{padding:14px 32px;} }
+.nav-links{display:none;}
+@media (min-width:900px){
+  .nav-links{display:flex;gap:22px;font-size:14px;font-weight:600;color:var(--text-muted);}
+  .nav-links a:hover{color:var(--brand);}
+}
+.nav-right{display:flex;align-items:center;gap:10px;}
+
+/* ---------- bottom nav (mobile, consumer only) ---------- */
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,0.06);}
+@media (min-width:900px){ .bottom-nav{display:none;} }
+.bottom-nav button{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--text-muted);font-weight:600;padding:4px 8px;}
+.bottom-nav button.active{color:var(--brand);}
+.bottom-nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+body.has-bottom-nav{padding-bottom:64px;}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:var(--radius-sm);padding:11px 18px;font-size:14px;font-weight:700;transition:transform .12s,box-shadow .12s,opacity .12s;white-space:nowrap;}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(255,90,54,0.35);}
+.btn-primary:hover{background:var(--brand-dark);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+.btn-outline:hover{border-color:var(--brand);color:var(--brand);}
+.btn-ghost{background:var(--surface-2);color:var(--text);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-block{width:100%;}
+.btn-lg{padding:15px 22px;font-size:16px;border-radius:14px;}
+.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none;}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+.card-pad{padding:20px;}
+.card-hover{transition:transform .18s,box-shadow .18s;}
+.card-hover:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+
+/* ---------- badges ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:7px;}
+.badge-brand{background:var(--brand);color:#fff;}
+.badge-success{background:var(--success-bg);color:var(--success);}
+.badge-danger{background:var(--danger-bg);color:var(--danger);}
+.badge-warning{background:var(--warning-bg);color:var(--warning);}
+.badge-muted{background:var(--surface-2);color:var(--text-muted);}
+
+/* ---------- deal card (customer) ---------- */
+.deal-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s;}
+.deal-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);}
+.deal-card.is-inactive{opacity:0.55;}
+.deal-cover{height:150px;position:relative;display:flex;align-items:flex-end;padding:12px;color:#fff;}
+.deal-cover .stars{font-size:12px;font-weight:700;background:rgba(0,0,0,0.32);padding:3px 8px;border-radius:7px;}
+.deal-cover .discount-ribbon{position:absolute;top:10px;left:10px;background:var(--brand);color:#fff;font-weight:800;font-size:12.5px;padding:5px 10px;border-radius:8px;box-shadow:0 4px 10px rgba(255,90,54,0.4);}
+.deal-cover .urgent-ribbon{position:absolute;top:10px;right:10px;background:#fff;color:var(--brand-dark);font-weight:700;font-size:11px;padding:4px 8px;border-radius:7px;}
+.deal-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1;}
+.deal-title{font-size:15.5px;font-weight:800;}
+.deal-loc{font-size:12.5px;color:var(--text-muted);}
+.deal-amenities{display:flex;flex-wrap:wrap;gap:5px;}
+.price-row{display:flex;align-items:baseline;gap:8px;}
+.price-old{font-size:13px;color:var(--text-faint);text-decoration:line-through;}
+.price-new{font-size:23px;font-weight:800;color:var(--brand-dark);}
+.countdown{font-variant-numeric:tabular-nums;font-weight:700;font-size:13px;color:var(--text);display:inline-flex;align-items:center;gap:5px;}
+.countdown.urgent{color:var(--danger);}
+.countdown svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+
+/* ---------- filters ---------- */
+.filter-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.filter-chips::-webkit-scrollbar{display:none;}
+.chip{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text-muted);}
+.chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.filters-sidebar{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;}
+.filters-sidebar h4{font-size:13px;margin-bottom:10px;}
+.filter-group{margin-bottom:18px;}
+.filter-group:last-child{margin-bottom:0;}
+.check-row{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--text-muted);margin-bottom:8px;cursor:pointer;}
+
+/* ---------- forms ---------- */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.03em;}
+.field input[type=text],.field input[type=email],.field input[type=number],.field input[type=password],.field input[type=date],.field select,.field textarea{
+  width:100%;border:1.5px solid var(--border);background:var(--bg);color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand);}
+.form-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media (min-width:640px){ .form-grid.cols-2{grid-template-columns:1fr 1fr;} }
+.field.full{grid-column:1/-1;}
+.radio-row{display:flex;gap:10px;flex-wrap:wrap;}
+.radio-pill{border:1.5px solid var(--border);border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--text-muted);cursor:pointer;}
+.radio-pill.active{border-color:var(--brand);color:var(--brand-dark);background:var(--brand-50);}
+
+/* ---------- alerts / validation ---------- */
+.alert{border-radius:12px;padding:12px 14px;font-size:13px;display:flex;gap:8px;align-items:flex-start;}
+.alert-danger{background:var(--danger-bg);color:var(--danger);}
+.alert-success{background:var(--success-bg);color:var(--success);}
+.alert-warning{background:var(--warning-bg);color:var(--warning);}
+.alert-brand{background:var(--brand-50);color:var(--brand-dark);}
+
+/* ---------- modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,12,10,0.55);display:none;align-items:flex-end;justify-content:center;z-index:200;}
+.modal-overlay.show{display:flex;}
+@media (min-width:640px){ .modal-overlay{align-items:center;padding:20px;} }
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+@media (min-width:640px){ .modal{border-radius:20px;} }
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:2;}
+.modal-close{width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:none;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.modal-body{padding:18px 20px 24px;}
+
+/* ---------- wizard ---------- */
+.wizard-steps{display:flex;gap:6px;margin-bottom:18px;}
+.wizard-steps .dot{flex:1;height:5px;border-radius:4px;background:var(--surface-2);}
+.wizard-steps .dot.done{background:var(--brand);}
+.wizard-step-label{font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+
+/* ---------- toast ---------- */
+.toast-wrap{position:fixed;bottom:78px;right:16px;left:16px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:300;pointer-events:none;}
+@media (min-width:900px){ .toast-wrap{left:auto;bottom:20px;} }
+.toast{pointer-events:auto;background:var(--ink);color:#fff;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;max-width:340px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.toast-danger{background:var(--danger);}
+.toast.toast-success{background:var(--success);}
+
+/* ---------- tables ---------- */
+.table-wrap{overflow-x:auto;}
+.table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px;}
+.table th{text-align:left;font-size:11.5px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.03em;padding:8px 10px;border-bottom:1px solid var(--border);}
+.table td{padding:11px 10px;border-bottom:1px solid var(--border);}
+.table tr:last-child td{border-bottom:none;}
+
+/* ---------- dashboard stat grids ---------- */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media (min-width:700px){ .stat-grid{grid-template-columns:repeat(4,1fr);} }
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);}
+.stat-label{font-size:11.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:6px;}
+.stat-value{font-size:24px;font-weight:800;}
+.stat-delta{font-size:11.5px;color:var(--success);margin-top:4px;font-weight:600;}
+.two-col{display:grid;grid-template-columns:1fr;gap:20px;}
+@media (min-width:960px){ .two-col{grid-template-columns:1.05fr 1.3fr;} }
+
+/* ---------- progress bar ---------- */
+.progress{height:7px;background:var(--surface-2);border-radius:5px;overflow:hidden;}
+.progress span{display:block;height:100%;background:var(--brand);}
+
+/* ---------- skeleton loading ---------- */
+.skeleton{background:linear-gradient(90deg,var(--surface-2) 25%,var(--border) 37%,var(--surface-2) 63%);background-size:400% 100%;animation:skeleton-shimmer 1.4s ease infinite;border-radius:12px;}
+@keyframes skeleton-shimmer{0%{background-position:100% 50%;}100%{background-position:0 50%;}}
+.skeleton-card{height:290px;border-radius:18px;}
+
+/* ---------- empty state ---------- */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+.empty-state svg{width:40px;height:40px;stroke:var(--text-faint);fill:none;stroke-width:1.5;margin-bottom:12px;}
+
+/* ---------- hero (consumer) ---------- */
+.hero{background:linear-gradient(160deg,var(--ink) 0%,#1f3f3f 55%,var(--brand-dark) 130%);color:#fff;padding:42px 0 30px;}
+.hero h1{font-size:clamp(26px,5vw,42px);margin-bottom:10px;}
+.hero p.sub{font-size:15px;opacity:0.85;max-width:520px;margin-bottom:22px;}
+.search-card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);padding:10px;display:grid;grid-template-columns:1fr;gap:0;color:var(--text);}
+@media (min-width:760px){ .search-card{grid-template-columns:1.3fr 1fr 1fr auto;} }
+.search-card > div{padding:6px 14px;border-bottom:1px solid var(--border);}
+@media (min-width:760px){ .search-card > div{border-bottom:none;border-right:1px solid var(--border);} .search-card > div:last-child{border-right:none;} }
+.search-card label{display:block;font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;}
+.search-card input{border:none;background:transparent;font-size:14px;width:100%;color:var(--text);padding:0;}
+.search-card input:focus{outline:none;}
+
+/* ---------- how it works ---------- */
+.how-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media (min-width:760px){ .how-grid{grid-template-columns:repeat(5,1fr);} }
+.how-step{text-align:left;}
+.how-step .num{font-size:26px;font-weight:800;color:var(--brand);margin-bottom:6px;}
+.how-step p{font-size:13.5px;color:var(--text-muted);}
+
+/* ---------- hotel CTA banner ---------- */
+.cta-banner{background:var(--ink);color:#fff;border-radius:22px;padding:36px 26px;text-align:center;}
+.cta-banner h2{font-size:clamp(22px,4vw,32px);margin-bottom:6px;}
+.cta-banner .fine{font-size:12.5px;opacity:0.7;margin-top:10px;}
+
+/* ---------- footer ---------- */
+footer.site-footer{border-top:1px solid var(--border);padding:28px 0;margin-top:20px;}
+.foot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+@media (min-width:760px){ .foot-grid{grid-template-columns:repeat(4,1fr);} }
+.foot-grid h5{font-size:12.5px;margin-bottom:10px;color:var(--text);}
+.foot-grid a,.foot-grid button{display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted);background:none;border:none;padding:0;text-align:left;}
+.foot-grid a:hover,.foot-grid button:hover{color:var(--brand);}
+.foot-bottom{border-top:1px solid var(--border);margin-top:18px;padding-top:14px;font-size:12px;color:var(--text-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+/* ---------- utility ---------- */
+.flex{display:flex;}
+.flex-between{display:flex;align-items:center;justify-content:space-between;}
+.flex-center{display:flex;align-items:center;justify-content:center;}
+.gap-8{gap:8px;} .gap-12{gap:12px;} .gap-16{gap:16px;}
+.mt-8{margin-top:8px;} .mt-16{margin-top:16px;} .mt-24{margin-top:24px;} .mt-32{margin-top:32px;}
+.mb-8{margin-bottom:8px;} .mb-16{margin-bottom:16px;} .mb-24{margin-bottom:24px;}
+.text-muted{color:var(--text-muted);}
+.text-sm{font-size:13px;}
+.text-center{text-align:center;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;}
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,0.08);z-index:150;}
+@media (min-width:900px){ .sticky-cta{display:none;} }
+.section{padding:44px 0;}
+.hidden{display:none !important;}
+
+</style>
+<style>
+  /* ---- page-specific layout glue (component styles live in style.css) ---- */
+  .region-chips-row{display:flex;margin-bottom:14px;}
+  @media (min-width:900px){ .region-chips-row{display:none;} }
+  .region-radio-list{display:block;}
+  @media (max-width:899px){ .region-radio-list{display:none;} }
+  .deals-layout{display:grid;grid-template-columns:1fr;gap:24px;}
+  @media (min-width:900px){ .deals-layout{grid-template-columns:260px 1fr;align-items:start;} }
+  .deal-cover-badge{position:absolute;top:50%;left:14px;transform:translateY(-50%);font-size:30px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1px;}
+  .login-options{display:grid;gap:12px;margin-top:8px;}
+  .success-emoji{font-size:48px;text-align:center;margin-bottom:6px;}
+  .range-row{display:flex;align-items:center;gap:10px;}
+  .range-row input[type=range]{flex:1;}
+  .detail-cover{height:170px;border-radius:14px;margin-bottom:16px;position:relative;display:flex;align-items:flex-end;padding:12px;color:#fff;}
+  .section-title{margin-bottom:22px;}
+  .section-title h2{font-size:clamp(20px,3vw,28px);margin-bottom:6px;}
+  .wizard-actions{display:flex;gap:10px;margin-top:16px;}
+  .wizard-actions .btn{flex:1;}
+  .foot-grid p{font-size:13px;color:var(--text-muted);margin-bottom:8px;}
+  /* ---- tek sayfa: üç ana görünüm arası geçiş (Fırsatlar / Otel Paneli / Admin) ---- */
+  .app-view{display:none;}
+  .app-view.active{display:block;}
+  .app-tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;}
+  .app-tabs button{border:none;background:transparent;padding:8px 14px;border-radius:9px;font-size:13.5px;font-weight:700;color:var(--text-muted);white-space:nowrap;}
+  .app-tabs button.active{background:var(--surface);color:var(--brand-dark);box-shadow:var(--shadow);}
+</style>
+</head>
+<body class="has-bottom-nav">
+
+  <!-- ============ TOP NAV (tüm uygulama için tek nav) ============ -->
+  <header class="topnav">
+    <div class="topnav-inner">
+      <a href="#" class="logo" data-app-tab="customer">
+        <span class="logo-mark"></span>
+        <span class="logo-oda">Oda</span><span class="logo-drop">Drop</span>
+      </a>
+      <div class="app-tabs" id="appTabs">
+        <button type="button" class="active" data-app-tab="customer">Fırsatlar</button>
+        <button type="button" data-app-tab="hotel">Otel Paneli</button>
+        <button type="button" data-app-tab="admin">Admin</button>
+      </div>
+      <div class="nav-right">
+        <a href="#" class="btn btn-ghost btn-sm" id="navBookingsLink">Rezervasyonlar</a>
+        <button class="btn btn-outline btn-sm" id="loginNavBtn" type="button">Giriş</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       GÖRÜNÜM 1 — MÜŞTERİ (Fırsatlar)
+       ===================================================================== -->
+  <div class="app-view active" id="view-customer">
+
+    <section class="hero">
+      <div class="container">
+        <h1>Antalya'da yarının en iyi otel fırsatları.</h1>
+        <p class="sub">Satılmayacak odalar, sadece bugün daha uygun fiyatla.</p>
+        <div class="search-card">
+          <div>
+            <label>Bölge</label>
+            <input type="text" value="Antalya" disabled>
+          </div>
+          <div>
+            <label>Tarih</label>
+            <input type="text" id="tomorrowDateField" disabled>
+          </div>
+          <div>
+            <label>Misafir</label>
+            <input type="number" id="guestCountInput" value="2" min="1" max="10">
+          </div>
+          <div class="flex-center" style="padding:10px 6px;">
+            <button class="btn btn-primary btn-block" id="showDealsBtn" type="button">Fırsatları Göster</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="deals">
+      <div class="container">
+        <div class="section-title">
+          <h2>Bugünün Flash Fırsatları</h2>
+          <p class="text-muted text-sm">Yarın için Antalya'da açılan flash sale'ler — stoklar sınırlı, süre dolunca fırsat biter.</p>
+        </div>
+
+        <div class="deals-layout">
+          <aside id="regions">
+            <div class="filter-chips region-chips-row" id="regionChipsMobile">
+              <button class="chip active" type="button" data-region="all">Tümü</button>
+              <button class="chip" type="button" data-region="Lara">Lara</button>
+              <button class="chip" type="button" data-region="Belek">Belek</button>
+              <button class="chip" type="button" data-region="Side">Side</button>
+              <button class="chip" type="button" data-region="Kemer">Kemer</button>
+              <button class="chip" type="button" data-region="Alanya">Alanya</button>
+              <button class="chip" type="button" data-region="Kaş">Kaş</button>
+            </div>
+
+            <div class="filters-sidebar">
+              <div class="filter-group">
+                <h4>Bölge</h4>
+                <div class="region-radio-list">
+                  <label class="check-row"><input type="radio" name="region" value="all" checked> Tümü</label>
+                  <label class="check-row"><input type="radio" name="region" value="Lara"> Lara</label>
+                  <label class="check-row"><input type="radio" name="region" value="Belek"> Belek</label>
+                  <label class="check-row"><input type="radio" name="region" value="Side"> Side</label>
+                  <label class="check-row"><input type="radio" name="region" value="Kemer"> Kemer</label>
+                  <label class="check-row"><input type="radio" name="region" value="Alanya"> Alanya</label>
+                  <label class="check-row"><input type="radio" name="region" value="Kaş"> Kaş</label>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <h4>Maksimum Fiyat</h4>
+                <div class="range-row">
+                  <input type="range" id="maxPriceRange" min="20" max="200" step="5" value="200">
+                  <span id="maxPriceLabel" class="text-sm">€200</span>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <h4>Yıldız</h4>
+                <label class="check-row"><input type="radio" name="minStars" value="0" checked> Tümü</label>
+                <label class="check-row"><input type="radio" name="minStars" value="3"> 3+ yıldız</label>
+                <label class="check-row"><input type="radio" name="minStars" value="4"> 4+ yıldız</label>
+                <label class="check-row"><input type="radio" name="minStars" value="5"> 5 yıldız</label>
+              </div>
+
+              <div class="filter-group">
+                <h4>Minimum İndirim</h4>
+                <label class="check-row"><input type="radio" name="minDiscount" value="0" checked> Tümü</label>
+                <label class="check-row"><input type="radio" name="minDiscount" value="30"> %30 ve üzeri</label>
+                <label class="check-row"><input type="radio" name="minDiscount" value="40"> %40 ve üzeri</label>
+                <label class="check-row"><input type="radio" name="minDiscount" value="50"> %50 ve üzeri</label>
+              </div>
+
+              <div class="filter-group">
+                <h4>Olanaklar</h4>
+                <label class="check-row"><input type="checkbox" id="filterBreakfast"> Kahvaltı</label>
+                <label class="check-row"><input type="checkbox" id="filterPool"> Havuz</label>
+                <label class="check-row"><input type="checkbox" id="filterSeaView"> Deniz Manzarası</label>
+              </div>
+
+              <button class="btn btn-ghost btn-sm btn-block" id="resetFiltersBtn" type="button">Filtreleri Temizle</button>
+            </div>
+          </aside>
+
+          <div>
+            <div id="dealsGrid" class="grid-auto"></div>
+            <div id="dealsEmpty" class="empty-state hidden">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg>
+              <p>Bu filtrelerle eşleşen fırsat bulunamadı.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how">
+      <div class="container">
+        <div class="section-title">
+          <h2>Nasıl Çalışır?</h2>
+        </div>
+        <div class="how-grid">
+          <div class="how-step"><div class="num">01</div><p>Otel yarın boş kalacak odasını belirler.</p></div>
+          <div class="how-step"><div class="num">02</div><p>OdaDrop gerçek fiyatı kontrol eder.</p></div>
+          <div class="how-step"><div class="num">03</div><p>En az %30 indirimle flash sale açılır.</p></div>
+          <div class="how-step"><div class="num">04</div><p>Müşteri kısa süreli fırsatı satın alır.</p></div>
+          <div class="how-step"><div class="num">05</div><p>Otel boş kalacak odadan gelir elde eder.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="cta-banner">
+          <h2>Yarın boş kalacak odan mı var? Bugün sat.</h2>
+          <p>Sabit ücret yok. Sadece sattığın odadan %6 komisyon.</p>
+          <div class="mt-24">
+            <button type="button" class="btn btn-primary btn-lg" data-app-tab="hotel">Otelimi OdaDrop'a Ekle</button>
+          </div>
+          <p class="fine">Otel hesabınızla giriş yaparak dakikalar içinde ilk flash sale'inizi yayınlayın.</p>
+        </div>
+      </div>
+    </section>
+  </div><!-- /view-customer -->
+
+  <!-- =====================================================================
+       GÖRÜNÜM 2 — OTEL PANELİ
+       ===================================================================== -->
+  <div class="app-view" id="view-hotel">
+    <div class="container" id="hotelLoginView" style="max-width:460px;">
+      <div class="card card-pad mt-32">
+        <h2 class="mb-8">The Lara Resort</h2>
+        <p class="text-muted text-sm">Lara &middot; ⭐⭐⭐⭐⭐</p>
+        <p class="text-muted text-sm mt-16">Demo otel hesabıyla giriş yaparak flash sale oluşturabilir, envanterinizi, rezervasyonlarınızı ve gelirinizi takip edebilirsiniz.</p>
+        <button class="btn btn-primary btn-block mt-24" id="hotelLoginBtn">Giriş yap</button>
+      </div>
+    </div>
+
+    <div class="container hidden" id="hotelDashboardView">
+      <div class="flex-between mt-24 mb-16" style="flex-wrap:wrap;gap:12px;">
+        <div class="filter-chips" id="hotelTabBar" style="margin-bottom:0;">
+          <button type="button" class="chip" data-tab="dashboard">Dashboard</button>
+          <button type="button" class="chip" data-tab="flash">Flash Sale</button>
+          <button type="button" class="chip" data-tab="inventory">Inventory</button>
+          <button type="button" class="chip" data-tab="bookings">Rezervasyonlar</button>
+          <button type="button" class="chip" data-tab="revenue">Gelir</button>
+          <button type="button" class="chip" data-tab="settings">Otel Ayarları</button>
+        </div>
+        <div id="hotelNavRight"></div>
+      </div>
+
+      <section id="htab-dashboard" class="tab-panel"></section>
+      <section id="htab-flash" class="tab-panel hidden"></section>
+      <section id="htab-inventory" class="tab-panel hidden"></section>
+      <section id="htab-bookings" class="tab-panel hidden"></section>
+      <section id="htab-revenue" class="tab-panel hidden"></section>
+      <section id="htab-settings" class="tab-panel hidden"></section>
+    </div>
+  </div><!-- /view-hotel -->
+
+  <!-- =====================================================================
+       GÖRÜNÜM 3 — ADMIN PANELİ
+       ===================================================================== -->
+  <div class="app-view" id="view-admin">
+    <div class="container" id="adminLoginView" style="max-width:460px;">
+      <div class="card card-pad mt-32">
+        <h2 class="mb-8">OdaDrop Admin</h2>
+        <p class="text-muted text-sm">Platform yönetim paneline giriş yapın.</p>
+        <button class="btn btn-primary btn-block mt-24" id="adminLoginBtn">Giriş yap</button>
+      </div>
+    </div>
+
+    <div class="container hidden" id="adminDashboardView">
+      <div class="flex-between mt-24 mb-16" style="flex-wrap:wrap;gap:12px;">
+        <div class="filter-chips" id="adminTabBar" style="margin-bottom:0;">
+          <button type="button" class="chip" data-tab="dashboard">Dashboard</button>
+          <button type="button" class="chip" data-tab="hotels">Otel Yönetimi</button>
+          <button type="button" class="chip" data-tab="compliance">Fiyat Kontrolü</button>
+          <button type="button" class="chip" data-tab="bookings">Rezervasyonlar</button>
+          <button type="button" class="chip" data-tab="revenue">Revenue Dashboard</button>
+        </div>
+        <div id="adminNavRight"></div>
+      </div>
+
+      <section id="atab-dashboard" class="tab-panel"></section>
+      <section id="atab-hotels" class="tab-panel hidden"></section>
+      <section id="atab-compliance" class="tab-panel hidden"></section>
+      <section id="atab-bookings" class="tab-panel hidden"></section>
+      <section id="atab-revenue" class="tab-panel hidden"></section>
+    </div>
+  </div><!-- /view-admin -->
+
+  <!-- ============ FOOTER (tüm görünümler için tek footer) ============ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="foot-grid">
+        <div>
+          <h5><span class="logo-oda">Oda</span><span class="logo-drop">Drop</span></h5>
+          <p>Antalya'da son dakika otel flash-sale pazar yeri. Otellerin satamayacağı odalar, müşteriler için fırsata dönüşür.</p>
+        </div>
+        <div>
+          <h5>Bölgeler</h5>
+          <button type="button" data-action="footer-region" data-region="Lara">Lara</button>
+          <button type="button" data-action="footer-region" data-region="Belek">Belek</button>
+          <button type="button" data-action="footer-region" data-region="Side">Side</button>
+          <button type="button" data-action="footer-region" data-region="Kemer">Kemer</button>
+          <button type="button" data-action="footer-region" data-region="Alanya">Alanya</button>
+          <button type="button" data-action="footer-region" data-region="Kaş">Kaş</button>
+        </div>
+        <div>
+          <h5>Oteller için</h5>
+          <button type="button" data-app-tab="hotel">Otelim İçin OdaDrop</button>
+          <button type="button" data-app-tab="admin">Yönetim Paneli</button>
+          <a href="#how" data-app-tab="customer">Nasıl Çalışır?</a>
+        </div>
+        <div>
+          <h5>Müşteri</h5>
+          <a href="#deals" data-app-tab="customer">Fırsatlar</a>
+          <button type="button" id="footBookingsBtn">Rezervasyonlarım</button>
+          <button type="button" id="footLoginBtn">Giriş Yap</button>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <strong>Boş Odanı Yarına Bırakma.</strong>
+        <span>&copy; 2026 OdaDrop — demo MVP, gerçek bir rezervasyon platformu değildir.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ BOTTOM NAV (mobile) ============ -->
+  <nav class="bottom-nav">
+    <button type="button" id="bottomNavDeals" class="active" data-app-tab="customer">
+      <svg viewBox="0 0 24 24"><path d="M20 12l-8-8-8 8"></path><path d="M4 12v8h16v-8"></path></svg>
+      Fırsatlar
+    </button>
+    <button type="button" id="bottomNavBookings">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 2v4M16 2v4"></path></svg>
+      Rezervasyonlar
+    </button>
+    <button type="button" id="bottomNavHotel" data-app-tab="hotel">
+      <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M10 21v-6h4v6"></path></svg>
+      Otelim İçin
+    </button>
+    <button type="button" id="bottomNavLoginBtn">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+      Giriş
+    </button>
+  </nav>
+
+  <!-- ============ LOGIN MODAL (müşteri/otel/admin rol seçimi) ============ -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <div class="modal-header">
+        <strong>OdaDrop'a hoş geldiniz</strong>
+        <button class="modal-close" id="loginModalClose" type="button">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted text-sm mb-16">Bu bir demo ortamıdır. Devam etmek için bir rol seçin.</p>
+        <div class="login-options">
+          <button class="btn btn-primary btn-lg btn-block" id="loginCustomerBtn" type="button">Müşteri olarak devam et</button>
+          <button class="btn btn-outline btn-lg btn-block" id="loginHotelBtn" type="button">Otel olarak devam et</button>
+          <button class="btn btn-outline btn-lg btn-block" id="loginAdminBtn" type="button">Admin olarak devam et</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DEAL DETAIL / BOOKING WIZARD MODAL ============ -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <strong id="detailModalTitle">Fırsat Detayı</strong>
+        <button class="modal-close" id="detailModalClose" type="button">&times;</button>
+      </div>
+      <div class="modal-body" id="detailModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ BOOKINGS MODAL ============ -->
+  <div class="modal-overlay" id="bookingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <strong>Rezervasyonlarım</strong>
+        <button class="modal-close" id="bookingsModalClose" type="button">&times;</button>
+      </div>
+      <div class="modal-body" id="bookingsModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ TOASTS (tüm görünümler için tek toast alanı) ============ -->
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script>
+/* ---- assets/data.js (inline) ---- */
+/*
+ * OdaDrop — mock veri seti.
+ * Sadece Antalya bölgeleri: Lara, Belek, Side, Kemer, Alanya, Kaş.
+ * "The Lara Resort" demo otel hesabıdır (hotel.html demo login).
+ * Reference price hesaplamasında normalPrice KULLANILMAZ (otelin şişirilmiş
+ * fiyatına göre indirim hesaplanmaması kuralı gereği) — bkz. state.js
+ * referencePrice(). avg30d / avg7d / marketPrice gerçek/ölçülen fiyat
+ * sinyalleridir.
+ */
+(function (root) {
+  var GRADIENTS = [
+    ['#ff9966', '#ff5e62'],
+    ['#36d1dc', '#5b86e5'],
+    ['#f7971e', '#ffd200'],
+    ['#7f00ff', '#e100ff'],
+    ['#11998e', '#38ef7d'],
+    ['#fc5c7d', '#6a82fb'],
+    ['#c92a3f', '#7a1c28'],
+    ['#00b09b', '#96c93d'],
+    ['#e1eec3', '#f05053'],
+    ['#603813', '#b29f94'],
+    ['#4568dc', '#b06ab3'],
+    ['#ee0979', '#ff6a00']
+  ];
+
+  var HOTELS = [
+    {
+      id: 'lara-resort',
+      name: 'The Lara Resort',
+      region: 'Lara',
+      stars: 5,
+      description: 'Lara sahil şeridinde, özel plajı ve geniş havuz alanlarıyla ailelere ve çiftlere hitap eden 5 yıldızlı bir tatil oteli.',
+      gradient: GRADIENTS[0],
+      amenities: ['Wifi', 'Havuz', 'Deniz Manzarası', 'Spa', 'Fitness'],
+      breakfast: true,
+      pool: true,
+      seaView: true,
+      hotelSummary: { totalRooms: 120, occupiedRooms: 87 },
+      rooms: [
+        { type: 'Standard Room', totalRooms: 12, occupiedRooms: 0, expectedNormalSales: 0, avg30d: 100, avg7d: 100, marketPrice: 100, normalPrice: 120 },
+        { type: 'Deluxe Room', totalRooms: 6, occupiedRooms: 0, expectedNormalSales: 0, avg30d: 140, avg7d: 140, marketPrice: 140, normalPrice: 165 },
+        { type: 'Suite', totalRooms: 3, occupiedRooms: 0, expectedNormalSales: 3, avg30d: 220, avg7d: 220, marketPrice: 220, normalPrice: 260 }
+      ],
+      active: true,
+      demoOwner: true
+    },
+    { id: 'belek-sun', name: 'Belek Sun Resort', region: 'Belek', stars: 5, description: 'Belek\'in golf sahalarına yakın, geniş bahçeli ve ultra her şey dahil hizmet sunan lüks resort.', gradient: GRADIENTS[1], amenities: ['Wifi', 'Havuz', 'Golf', 'Spa'], breakfast: true, pool: true, seaView: true, hotelSummary: { totalRooms: 210, occupiedRooms: 168 }, rooms: [{ type: 'Standard Room', totalRooms: 14, occupiedRooms: 0, expectedNormalSales: 2, avg30d: 110, avg7d: 105, marketPrice: 108, normalPrice: 130 }], active: true },
+    { id: 'side-premium', name: 'Side Premium Hotel', region: 'Side', stars: 4, description: 'Antik Side kentine yürüme mesafesinde, sakin ve aile dostu bir premium konsept otel.', gradient: GRADIENTS[2], amenities: ['Wifi', 'Havuz', 'Kahvaltı'], breakfast: true, pool: true, seaView: false, hotelSummary: { totalRooms: 96, occupiedRooms: 70 }, rooms: [{ type: 'Standard Room', totalRooms: 10, occupiedRooms: 1, expectedNormalSales: 1, avg30d: 90, avg7d: 88, marketPrice: 92, normalPrice: 110 }], active: true },
+    { id: 'kemer-bay', name: 'Kemer Bay Resort', region: 'Kemer', stars: 4, description: 'Toros Dağları\'nın eteğinde, dar koylara sahip Kemer sahilinde butik bir deniz oteli.', gradient: GRADIENTS[3], amenities: ['Wifi', 'Deniz Manzarası', 'Kahvaltı'], breakfast: true, pool: false, seaView: true, hotelSummary: { totalRooms: 74, occupiedRooms: 55 }, rooms: [{ type: 'Standard Room', totalRooms: 8, occupiedRooms: 0, expectedNormalSales: 1, avg30d: 95, avg7d: 97, marketPrice: 94, normalPrice: 115 }], active: true },
+    { id: 'alanya-coast', name: 'Alanya Coast Hotel', region: 'Alanya', stars: 4, description: 'Alanya Kalesi manzaralı, geniş plaj şeridine sahip modern bir sahil oteli.', gradient: GRADIENTS[4], amenities: ['Wifi', 'Havuz', 'Deniz Manzarası'], breakfast: false, pool: true, seaView: true, hotelSummary: { totalRooms: 130, occupiedRooms: 101 }, rooms: [{ type: 'Standard Room', totalRooms: 11, occupiedRooms: 2, expectedNormalSales: 1, avg30d: 85, avg7d: 83, marketPrice: 86, normalPrice: 105 }], active: true },
+    { id: 'kas-boutique', name: 'Kaş Boutique Hotel', region: 'Kaş', stars: 3, description: 'Kaş\'ın sakin sokaklarında, taş mimarisiyle öne çıkan küçük ve samimi bir butik otel.', gradient: GRADIENTS[5], amenities: ['Wifi', 'Kahvaltı'], breakfast: true, pool: false, seaView: false, hotelSummary: { totalRooms: 28, occupiedRooms: 19 }, rooms: [{ type: 'Standard Room', totalRooms: 5, occupiedRooms: 0, expectedNormalSales: 1, avg30d: 70, avg7d: 68, marketPrice: 72, normalPrice: 90 }], active: true },
+    { id: 'lara-bluebay', name: 'Lara Blue Bay Hotel', region: 'Lara', stars: 5, description: 'Lara\'da geniş su parkı ve çocuk kulübüyle ailelerin favorisi olan büyük ölçekli bir tesis.', gradient: GRADIENTS[6], amenities: ['Wifi', 'Havuz', 'Spa', 'Kahvaltı'], breakfast: true, pool: true, seaView: true, hotelSummary: { totalRooms: 260, occupiedRooms: 210 }, rooms: [{ type: 'Deluxe Room', totalRooms: 9, occupiedRooms: 0, expectedNormalSales: 2, avg30d: 150, avg7d: 148, marketPrice: 152, normalPrice: 180 }], active: true },
+    { id: 'belek-golfspa', name: 'Belek Golf & Spa Resort', region: 'Belek', stars: 5, description: 'Profesyonel golf sahalarına ve kapsamlı bir spa merkezine ev sahipliği yapan premium resort.', gradient: GRADIENTS[7], amenities: ['Wifi', 'Golf', 'Spa', 'Havuz'], breakfast: true, pool: true, seaView: false, hotelSummary: { totalRooms: 180, occupiedRooms: 140 }, rooms: [{ type: 'Suite', totalRooms: 6, occupiedRooms: 0, expectedNormalSales: 1, avg30d: 210, avg7d: 205, marketPrice: 212, normalPrice: 250 }], active: true },
+    { id: 'side-beachpalace', name: 'Side Beach Palace', region: 'Side', stars: 4, description: 'Side sahiline sıfır mesafede, gün batımı manzarasıyla bilinen büyük bir plaj oteli.', gradient: GRADIENTS[8], amenities: ['Wifi', 'Havuz', 'Deniz Manzarası', 'Kahvaltı'], breakfast: true, pool: true, seaView: true, hotelSummary: { totalRooms: 150, occupiedRooms: 118 }, rooms: [{ type: 'Standard Room', totalRooms: 9, occupiedRooms: 0, expectedNormalSales: 0, avg30d: 98, avg7d: 96, marketPrice: 99, normalPrice: 118 }], active: true },
+    { id: 'kemer-pine', name: 'Kemer Pine Resort', region: 'Kemer', stars: 3, description: 'Çam ormanlarıyla çevrili, sakin bir tatil arayanlar için ekonomik bir orman-deniz oteli.', gradient: GRADIENTS[9], amenities: ['Wifi', 'Kahvaltı'], breakfast: true, pool: false, seaView: false, hotelSummary: { totalRooms: 60, occupiedRooms: 40 }, rooms: [{ type: 'Standard Room', totalRooms: 7, occupiedRooms: 1, expectedNormalSales: 1, avg30d: 65, avg7d: 63, marketPrice: 66, normalPrice: 82 }], active: true },
+    { id: 'alanya-castleview', name: 'Alanya Castle View Hotel', region: 'Alanya', stars: 4, description: 'Kale manzaralı teraslara sahip, şehir merkezine yakın konforlu bir şehir-sahil oteli.', gradient: GRADIENTS[10], amenities: ['Wifi', 'Havuz', 'Kahvaltı'], breakfast: true, pool: true, seaView: false, hotelSummary: { totalRooms: 88, occupiedRooms: 62 }, rooms: [{ type: 'Deluxe Room', totalRooms: 6, occupiedRooms: 0, expectedNormalSales: 1, avg30d: 120, avg7d: 118, marketPrice: 121, normalPrice: 145 }], active: true },
+    { id: 'kas-lagoon', name: 'Kaş Lagoon Suites', region: 'Kaş', stars: 4, description: 'Küçük koylara ve dalış noktalarına yakın, sakin bir lagün kenarında suit-konsept otel.', gradient: GRADIENTS[11], amenities: ['Wifi', 'Deniz Manzarası'], breakfast: false, pool: false, seaView: true, hotelSummary: { totalRooms: 34, occupiedRooms: 24 }, rooms: [{ type: 'Suite', totalRooms: 4, occupiedRooms: 0, expectedNormalSales: 1, avg30d: 160, avg7d: 158, marketPrice: 161, normalPrice: 190 }], active: true }
+  ];
+
+  root.OdaDropData = { HOTELS: HOTELS };
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { HOTELS: HOTELS };
+  }
+})(typeof window !== 'undefined' ? window : global);
+
+  </script>
+  <script>
+/* ---- assets/state.js (inline) ---- */
+/*
+ * OdaDrop — state & business rules.
+ * Tarayıcıda window.OdaDrop, Node'da module.exports olarak kullanılabilir
+ * (birim testleri için — bkz. test/rules.test.js).
+ *
+ * localStorage tek anahtar altında JSON blob olarak tutulur: 'odadrop_db'.
+ * db = { hotels, flashSales, bookings, activeUser }
+ *
+ * Gerçek backend'e bağlanırken bu modüldeki fonksiyonlar (referencePrice,
+ * computeMinFlashPrice, computeFlashEligible, createFlashSale, bookFlashSale,
+ * computeAdminStats...) aynı imzalarla bir API katmanına taşınabilir; UI
+ * kodu (index/hotel/admin .js) bu fonksiyonları çağırır, DB detaylarını
+ * bilmez — bu yüzden storage değişse bile üst katman değişmeden kalır.
+ */
+(function (root, factory) {
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = factory(require('./data.js').HOTELS);
+  } else {
+    root.OdaDrop = factory(root.OdaDropData.HOTELS);
+  }
+})(typeof window !== 'undefined' ? window : global, function (SEED_HOTELS) {
+  'use strict';
+
+  var DB_KEY = 'odadrop_db';
+  var COMMISSION_RATE = 0.06;
+  var MIN_DISCOUNT = 0.30;
+
+  // ---- localStorage polyfill (Node test ortamı için) ----
+  var memoryStore = {};
+  var storage = (typeof localStorage !== 'undefined')
+    ? localStorage
+    : {
+      getItem: function (k) { return Object.prototype.hasOwnProperty.call(memoryStore, k) ? memoryStore[k] : null; },
+      setItem: function (k, v) { memoryStore[k] = String(v); },
+      removeItem: function (k) { delete memoryStore[k]; }
+    };
+
+  // ---- tarih yardımcıları ----
+  var TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  function tomorrowDate() {
+    var d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d;
+  }
+  function formatDateLabel(d) {
+    return d.getDate() + ' ' + TR_MONTHS[d.getMonth()];
+  }
+  function dateKey(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function isSameDay(ts, d) {
+    var a = new Date(ts);
+    return a.getFullYear() === d.getFullYear() && a.getMonth() === d.getMonth() && a.getDate() === d.getDate();
+  }
+
+  // ---- DB CRUD ----
+  function freshDb() {
+    return { hotels: JSON.parse(JSON.stringify(SEED_HOTELS)), flashSales: [], bookings: [], activeUser: null };
+  }
+
+  function getDb() {
+    var raw = storage.getItem(DB_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+
+  function saveDb(db) {
+    storage.setItem(DB_KEY, JSON.stringify(db));
+    return db;
+  }
+
+  function seedFlashSale(db, hotelId, roomType, quantityTotal, quantityRemaining, price, durationHours, createdAtOffsetMs) {
+    var hotel = db.hotels.find(function (h) { return h.id === hotelId; });
+    var room = hotel.rooms.find(function (r) { return r.type === roomType; });
+    var ref = referencePrice(room);
+    var createdAt = Date.now() + (createdAtOffsetMs || 0);
+    db.flashSales.push({
+      id: 'FS-' + hotelId + '-' + roomType.replace(/\s+/g, '').toLowerCase() + '-' + durationHours + 'h' + (createdAtOffsetMs ? '-alt' : ''),
+      hotelId: hotelId,
+      roomType: roomType,
+      referencePrice: ref,
+      price: price,
+      quantityTotal: quantityTotal,
+      quantityRemaining: quantityRemaining,
+      durationHours: durationHours,
+      createdAt: createdAt,
+      endsAt: createdAt + durationHours * 3600000,
+      status: 'ACTIVE',
+      nonRefundable: true
+    });
+  }
+
+  function seedIfEmpty() {
+    var db = getDb();
+    if (db) return db;
+    db = freshDb();
+
+    // The Lara Resort demo hesabı BİLEREK boş bırakılır: hotel.html'e
+    // girildiğinde "18 odanız boş kalma riski taşıyor" önerisini canlı
+    // olarak deneyimleyip ilk flash sale'i kullanıcı oluştursun.
+    seedFlashSale(db, 'belek-sun', 'Standard Room', 10, 6, 76, 12, 0);
+    seedFlashSale(db, 'side-premium', 'Standard Room', 8, 3, 63, 6, 0);
+    seedFlashSale(db, 'kemer-bay', 'Standard Room', 6, 2, 68, 24, 0);
+    seedFlashSale(db, 'alanya-coast', 'Standard Room', 9, 4, 60, 12, 0);
+    seedFlashSale(db, 'kas-boutique', 'Standard Room', 4, 4, 49, 6, 0);
+    seedFlashSale(db, 'lara-bluebay', 'Deluxe Room', 7, 5, 105, 24, 0);
+    seedFlashSale(db, 'belek-golfspa', 'Suite', 4, 2, 147, 12, 0);
+    seedFlashSale(db, 'side-beachpalace', 'Standard Room', 9, 1, 69, 6, 0);
+    seedFlashSale(db, 'kemer-pine', 'Standard Room', 5, 5, 46, 24, 0);
+    seedFlashSale(db, 'alanya-castleview', 'Deluxe Room', 6, 3, 85, 12, 0);
+    // Test 7 (tükendi): stok sıfır.
+    seedFlashSale(db, 'kas-lagoon', 'Suite', 4, 0, 112, 12, 0);
+    // Süresi dolmuş örnek (Test 12 / countdown bittiğinde davranış) — 3 saat
+    // önce başlayıp 1 saatte biten bir kampanya, artık geçmişte kaldı.
+    seedFlashSale(db, 'kemer-pine', 'Standard Room', 3, 1, 46, 1, -3 * 3600000);
+
+    saveDb(db);
+    return db;
+  }
+
+  function resetDb() {
+    storage.removeItem(DB_KEY);
+    return seedIfEmpty();
+  }
+
+  // ---- iş kuralları ----
+
+  /**
+   * Reference price, otelin girdiği (potansiyel şişirilmiş) normalPrice'a
+   * DEĞİL; ölçülen 30 günlük ortalama, 7 günlük ortalama ve mock pazar
+   * fiyatına dayanır. Bu, otelin fiyatı yapay olarak yükseltip sahte "%30
+   * indirim" göstermesini engeller.
+   */
+  function referencePrice(room) {
+    return Math.round(room.avg30d * 0.5 + room.avg7d * 0.3 + room.marketPrice * 0.2);
+  }
+
+  /** "Minimum Flash Price" spesifikasyondaki adıyla korunmuştur; aslında bu,
+   * %30 indirim şartını sağlamak için girilebilecek MAKSİMUM flaş fiyatıdır
+   * (referencePrice * 0.70). Otel bu değerin altına da inebilir. */
+  function computeMinFlashPrice(refPrice) {
+    return Math.round(refPrice * (1 - MIN_DISCOUNT));
+  }
+
+  function validateFlashPrice(enteredPrice, refPrice) {
+    var maxAllowed = computeMinFlashPrice(refPrice);
+    var discountPct = refPrice > 0 ? Math.round((1 - enteredPrice / refPrice) * 100) : 0;
+    var valid = enteredPrice > 0 && enteredPrice <= maxAllowed;
+    return { valid: valid, maxAllowed: maxAllowed, discountPct: discountPct };
+  }
+
+  function roomFlashEligible(room) {
+    var available = room.totalRooms - room.occupiedRooms;
+    return Math.max(0, available - room.expectedNormalSales);
+  }
+
+  function roomsAlreadyInFlashSales(db, hotelId, roomType) {
+    return db.flashSales
+      .filter(function (fs) { return fs.hotelId === hotelId && fs.roomType === roomType && fs.status !== 'CANCELLED'; })
+      .filter(function (fs) { return fs.endsAt > Date.now(); })
+      .reduce(function (sum, fs) { return sum + fs.quantityTotal; }, 0);
+  }
+
+  function remainingFlashEligible(db, hotelId, roomType) {
+    var hotel = db.hotels.find(function (h) { return h.id === hotelId; });
+    var room = hotel.rooms.find(function (r) { return r.type === roomType; });
+    var eligible = roomFlashEligible(room);
+    var used = roomsAlreadyInFlashSales(db, hotelId, roomType);
+    return Math.max(0, eligible - used);
+  }
+
+  function hotelDashboard(hotelId) {
+    var db = seedIfEmpty();
+    var hotel = db.hotels.find(function (h) { return h.id === hotelId; });
+    var tomorrow = tomorrowDate();
+    var roomDetails = hotel.rooms.map(function (r) {
+      var ref = referencePrice(r);
+      var eligible = roomFlashEligible(r);
+      var remaining = remainingFlashEligible(db, hotelId, r.type);
+      return {
+        type: r.type,
+        referencePrice: ref,
+        minFlashPrice: computeMinFlashPrice(ref),
+        available: r.totalRooms - r.occupiedRooms,
+        flashEligible: eligible,
+        flashRemaining: remaining,
+        status: eligible > 0 ? 'Uygun' : 'Uygun Değil'
+      };
+    });
+    var totalFlashEligible = roomDetails.reduce(function (s, r) { return s + r.flashEligible; }, 0);
+    var estimatedFlashRevenue = roomDetails.reduce(function (s, r) {
+      return s + r.flashEligible * r.minFlashPrice;
+    }, 0);
+    return {
+      hotel: hotel,
+      tomorrowLabel: formatDateLabel(tomorrow),
+      totalRooms: hotel.hotelSummary.totalRooms,
+      occupiedRooms: hotel.hotelSummary.occupiedRooms,
+      availableRooms: hotel.hotelSummary.totalRooms - hotel.hotelSummary.occupiedRooms,
+      flashEligible: totalFlashEligible,
+      estimatedFlashRevenue: estimatedFlashRevenue,
+      rooms: roomDetails
+    };
+  }
+
+  function createFlashSale(params) {
+    var db = seedIfEmpty();
+    var hotel = db.hotels.find(function (h) { return h.id === params.hotelId; });
+    if (!hotel) return { ok: false, error: 'Otel bulunamadı.' };
+    var room = hotel.rooms.find(function (r) { return r.type === params.roomType; });
+    if (!room) return { ok: false, error: 'Oda tipi bulunamadı.' };
+
+    var remaining = remainingFlashEligible(db, params.hotelId, params.roomType);
+    if (params.quantity > remaining) {
+      return { ok: false, error: 'Bu tarih için maksimum ' + remaining + ' oda flash sale\'e açabilirsiniz.' };
+    }
+    if (params.quantity < 1) {
+      return { ok: false, error: 'En az 1 oda seçmelisiniz.' };
+    }
+
+    var ref = referencePrice(room);
+    var check = validateFlashPrice(params.price, ref);
+    if (!check.valid) {
+      return { ok: false, error: 'Minimum %30 gerçek indirim şartı sağlanmıyor.', maxAllowed: check.maxAllowed, referencePrice: ref };
+    }
+
+    var createdAt = Date.now();
+    var flashSale = {
+      id: 'FS-' + params.hotelId + '-' + Date.now(),
+      hotelId: params.hotelId,
+      roomType: params.roomType,
+      referencePrice: ref,
+      price: params.price,
+      quantityTotal: params.quantity,
+      quantityRemaining: params.quantity,
+      durationHours: params.durationHours,
+      createdAt: createdAt,
+      endsAt: createdAt + params.durationHours * 3600000,
+      status: 'ACTIVE',
+      nonRefundable: true
+    };
+    db.flashSales.unshift(flashSale);
+    saveDb(db);
+    return { ok: true, flashSale: flashSale };
+  }
+
+  function closeFlashSale(flashSaleId) {
+    var db = seedIfEmpty();
+    var fs = db.flashSales.find(function (f) { return f.id === flashSaleId; });
+    if (!fs) return { ok: false, error: 'Flash sale bulunamadı.' };
+    fs.status = 'CANCELLED';
+    saveDb(db);
+    return { ok: true };
+  }
+
+  function getFlashSaleState(fs) {
+    if (fs.status === 'CANCELLED') return 'CANCELLED';
+    if (Date.now() >= fs.endsAt) return 'EXPIRED';
+    if (fs.quantityRemaining <= 0) return 'SOLD_OUT';
+    return 'ACTIVE';
+  }
+
+  function getCustomerDeals(filters) {
+    filters = filters || {};
+    var db = seedIfEmpty();
+    var tomorrow = tomorrowDate();
+    var deals = db.flashSales
+      .map(function (fs) {
+        var hotel = db.hotels.find(function (h) { return h.id === fs.hotelId; });
+        var state = getFlashSaleState(fs);
+        var discountPct = Math.round((1 - fs.price / fs.referencePrice) * 100);
+        return {
+          flashSaleId: fs.id,
+          hotelId: hotel.id,
+          hotelName: hotel.name,
+          region: hotel.region,
+          stars: hotel.stars,
+          gradient: hotel.gradient,
+          amenities: hotel.amenities,
+          breakfast: hotel.breakfast,
+          pool: hotel.pool,
+          seaView: hotel.seaView,
+          description: hotel.description,
+          roomType: fs.roomType,
+          referencePrice: fs.referencePrice,
+          price: fs.price,
+          discountPct: discountPct,
+          quantityRemaining: fs.quantityRemaining,
+          endsAt: fs.endsAt,
+          checkInLabel: formatDateLabel(tomorrow),
+          state: state
+        };
+      })
+      .filter(function (d) { return d.state === 'ACTIVE' || d.state === 'SOLD_OUT' || d.state === 'EXPIRED'; });
+
+    return deals.filter(function (d) {
+      if (filters.region && filters.region !== 'all' && d.region !== filters.region) return false;
+      if (filters.maxPrice && d.price > filters.maxPrice) return false;
+      if (filters.minStars && d.stars < filters.minStars) return false;
+      if (filters.minDiscount && d.discountPct < filters.minDiscount) return false;
+      if (filters.breakfast && !d.breakfast) return false;
+      if (filters.pool && !d.pool) return false;
+      if (filters.seaView && !d.seaView) return false;
+      if (filters.hideInactive && d.state !== 'ACTIVE') return false;
+      return true;
+    });
+  }
+
+  function bookFlashSale(params) {
+    var db = seedIfEmpty();
+    var fs = db.flashSales.find(function (f) { return f.id === params.flashSaleId; });
+    if (!fs) return { ok: false, error: 'Fırsat bulunamadı.' };
+
+    var state = getFlashSaleState(fs);
+    if (state === 'EXPIRED' || state === 'CANCELLED') {
+      return { ok: false, error: 'Bu flash sale\'in süresi dolmuştur.' };
+    }
+    if (state === 'SOLD_OUT' || fs.quantityRemaining < (params.qty || 1)) {
+      return { ok: false, error: 'Bu fırsat tükendi.' };
+    }
+    if (!params.acceptedNonRefundable) {
+      return { ok: false, error: 'İade edilemez rezervasyon koşulunu kabul etmelisiniz.' };
+    }
+
+    var qty = params.qty || 1;
+    fs.quantityRemaining -= qty;
+    if (fs.quantityRemaining <= 0) fs.status = 'SOLD_OUT';
+
+    var hotel = db.hotels.find(function (h) { return h.id === fs.hotelId; });
+    var totalPrice = fs.price * qty;
+    var commission = Math.round(totalPrice * COMMISSION_RATE * 100) / 100;
+    var hotelNet = Math.round((totalPrice - commission) * 100) / 100;
+    var now = new Date();
+    var bookingId = 'ODR-' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '-' + Math.floor(1000 + Math.random() * 9000);
+
+    var booking = {
+      id: bookingId,
+      flashSaleId: fs.id,
+      hotelId: hotel.id,
+      hotelName: hotel.name,
+      roomType: fs.roomType,
+      guestName: params.guestName || 'Misafir',
+      guestEmail: params.guestEmail || '',
+      qty: qty,
+      unitPrice: fs.price,
+      totalPrice: totalPrice,
+      commission: commission,
+      hotelNet: hotelNet,
+      checkInLabel: formatDateLabel(tomorrowDate()),
+      status: 'CONFIRMED',
+      createdAt: Date.now()
+    };
+    db.bookings.unshift(booking);
+    saveDb(db);
+    return { ok: true, booking: booking };
+  }
+
+  function computeAdminStats() {
+    var db = seedIfEmpty();
+    var today = new Date();
+    var activeHotels = db.hotels.filter(function (h) { return h.active; }).length;
+    var activeFlashSales = db.flashSales.filter(function (fs) { return getFlashSaleState(fs) === 'ACTIVE'; }).length;
+    var round2 = function (n) { return Math.round(n * 100) / 100; };
+    var todaysBookings = db.bookings.filter(function (b) { return isSameDay(b.createdAt, today); });
+    var todaysGMV = round2(todaysBookings.reduce(function (s, b) { return s + b.totalPrice; }, 0));
+    var todaysCommission = round2(todaysBookings.reduce(function (s, b) { return s + b.commission; }, 0));
+    var avgBooking = todaysBookings.length ? round2(todaysGMV / todaysBookings.length) : 0;
+    var avgDiscountList = getCustomerDeals().map(function (d) { return d.discountPct; });
+    var avgDiscount = avgDiscountList.length ? Math.round(avgDiscountList.reduce(function (a, b) { return a + b; }, 0) / avgDiscountList.length) : 0;
+
+    return {
+      activeHotels: activeHotels,
+      activeFlashSales: activeFlashSales,
+      todaysBookingsCount: todaysBookings.length,
+      todaysGMV: todaysGMV,
+      todaysCommission: todaysCommission,
+      avgBooking: avgBooking,
+      avgDiscount: avgDiscount
+    };
+  }
+
+  function computeHotelRevenue(hotelId) {
+    var db = seedIfEmpty();
+    var now = new Date();
+    var monthBookings = db.bookings.filter(function (b) {
+      var d = new Date(b.createdAt);
+      return b.hotelId === hotelId && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    var round2 = function (n) { return Math.round(n * 100) / 100; };
+    var flashGMV = round2(monthBookings.reduce(function (s, b) { return s + b.totalPrice; }, 0));
+    var commission = round2(monthBookings.reduce(function (s, b) { return s + b.commission; }, 0));
+    var netRevenue = round2(monthBookings.reduce(function (s, b) { return s + b.hotelNet; }, 0));
+    var roomsSold = monthBookings.reduce(function (s, b) { return s + b.qty; }, 0);
+    return { flashGMV: flashGMV, commission: commission, netRevenue: netRevenue, roomsSold: roomsSold, bookings: monthBookings };
+  }
+
+  function priceCompliance() {
+    var db = seedIfEmpty();
+    return db.flashSales.map(function (fs) {
+      var hotel = db.hotels.find(function (h) { return h.id === fs.hotelId; });
+      var check = validateFlashPrice(fs.price, fs.referencePrice);
+      return {
+        hotelName: hotel.name,
+        roomType: fs.roomType,
+        referencePrice: fs.referencePrice,
+        price: fs.price,
+        maxAllowed: check.maxAllowed,
+        compliant: check.valid,
+        discountPct: check.discountPct
+      };
+    });
+  }
+
+  function setActiveUser(user) {
+    var db = seedIfEmpty();
+    db.activeUser = user;
+    saveDb(db);
+  }
+  function getActiveUser() {
+    var db = seedIfEmpty();
+    return db.activeUser;
+  }
+
+  function toggleHotelActive(hotelId) {
+    var db = seedIfEmpty();
+    var hotel = db.hotels.find(function (h) { return h.id === hotelId; });
+    if (hotel) { hotel.active = !hotel.active; saveDb(db); }
+    return hotel;
+  }
+
+  function allHotelsAdminView() {
+    var db = seedIfEmpty();
+    return db.hotels.map(function (h) {
+      var flashRooms = db.flashSales
+        .filter(function (fs) { return fs.hotelId === h.id && getFlashSaleState(fs) === 'ACTIVE'; })
+        .reduce(function (s, fs) { return s + fs.quantityTotal; }, 0);
+      var occupancyPct = Math.round((h.hotelSummary.occupiedRooms / h.hotelSummary.totalRooms) * 100);
+      return { id: h.id, name: h.name, region: h.region, stars: h.stars, flashRooms: flashRooms, occupancyPct: occupancyPct, active: h.active };
+    });
+  }
+
+  return {
+    COMMISSION_RATE: COMMISSION_RATE,
+    MIN_DISCOUNT: MIN_DISCOUNT,
+    formatDateLabel: formatDateLabel,
+    tomorrowDate: tomorrowDate,
+    dateKey: dateKey,
+    seedIfEmpty: seedIfEmpty,
+    resetDb: resetDb,
+    getDb: getDb,
+    saveDb: saveDb,
+    referencePrice: referencePrice,
+    computeMinFlashPrice: computeMinFlashPrice,
+    validateFlashPrice: validateFlashPrice,
+    roomFlashEligible: roomFlashEligible,
+    remainingFlashEligible: remainingFlashEligible,
+    hotelDashboard: hotelDashboard,
+    createFlashSale: createFlashSale,
+    closeFlashSale: closeFlashSale,
+    getFlashSaleState: getFlashSaleState,
+    getCustomerDeals: getCustomerDeals,
+    bookFlashSale: bookFlashSale,
+    computeAdminStats: computeAdminStats,
+    computeHotelRevenue: computeHotelRevenue,
+    priceCompliance: priceCompliance,
+    setActiveUser: setActiveUser,
+    getActiveUser: getActiveUser,
+    toggleHotelActive: toggleHotelActive,
+    allHotelsAdminView: allHotelsAdminView
+  };
+});
+
+  </script>
+  <script>
+/* ---- assets/index.js (inline) ---- */
+/*
+ * OdaDrop — customer-facing page behavior (index.html).
+ * Pure UI/interaction layer: all price/inventory/eligibility math is
+ * delegated to window.OdaDrop (assets/state.js). This file only renders
+ * and wires up DOM events.
+ */
+(function () {
+  'use strict';
+
+  var OD = window.OdaDrop;
+
+  // ---- module state ----
+  var currentFilters = { region: 'all', maxPrice: 200, minStars: 0, minDiscount: 0, breakfast: false, pool: false, seaView: false };
+  var renderedDeals = [];
+  var activeDetailDeal = null;
+  var bookingState = { flashSaleId: null, qty: 1, guestName: '', guestEmail: '', accepted: false };
+
+  // ---- helpers ----
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function getInitials(name) {
+    var words = String(name || '').split(' ').filter(Boolean);
+    var letters = words.slice(0, 2).map(function (w) { return w[0]; }).join('');
+    return letters.toUpperCase() || 'OD';
+  }
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function formatCountdown(ms) {
+    if (ms < 0) ms = 0;
+    var totalSeconds = Math.floor(ms / 1000);
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+    return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
+  }
+
+  function showToast(message, type) {
+    var wrap = document.getElementById('toastWrap');
+    if (!wrap) return;
+    var el = document.createElement('div');
+    el.className = 'toast' + (type === 'danger' ? ' toast-danger' : type === 'success' ? ' toast-success' : '');
+    el.textContent = message;
+    wrap.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('show'); });
+    setTimeout(function () {
+      el.classList.remove('show');
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+    }, 3200);
+  }
+
+  // ---- deal card rendering ----
+  function cardBottomHtml(d) {
+    if (d.state === 'SOLD_OUT') {
+      return '<div class="badge badge-danger mb-8">TÜKENDİ</div>' +
+        '<button class="btn btn-outline btn-block" disabled>Tükendi</button>';
+    }
+    if (d.state === 'EXPIRED') {
+      return '<div class="badge badge-muted mb-8">FLASH SALE SONA ERDİ</div>' +
+        '<button class="btn btn-outline btn-block" disabled>Süresi Doldu</button>';
+    }
+    return '<div class="price-row"><span class="price-old">€' + d.referencePrice + '</span><span class="price-new">€' + d.price + '</span></div>' +
+      '<span class="countdown" data-countdown-id="' + d.flashSaleId + '">--:--:--</span>' +
+      '<button class="btn btn-primary btn-block" data-action="view-deal" data-id="' + d.flashSaleId + '">Fırsatı Gör</button>';
+  }
+
+  function renderDealCard(d) {
+    var isActive = d.state === 'ACTIVE';
+    var initials = getInitials(d.hotelName);
+    var starsStr = '★'.repeat(d.stars);
+    var urgentBadge = (isActive && d.quantityRemaining <= 2) ? '<span class="urgent-ribbon">Son ' + d.quantityRemaining + ' oda</span>' : '';
+    var amenitiesHtml = (d.amenities || []).slice(0, 4).map(function (a) {
+      return '<span class="badge badge-muted">' + escapeHtml(a) + '</span>';
+    }).join('');
+
+    return (
+      '<div class="deal-card' + (isActive ? '' : ' is-inactive') + '" data-card-id="' + d.flashSaleId + '">' +
+        '<div class="deal-cover" style="background:linear-gradient(135deg,' + d.gradient[0] + ',' + d.gradient[1] + ')">' +
+          '<span class="discount-ribbon">-%' + d.discountPct + '</span>' +
+          urgentBadge +
+          '<span class="deal-cover-badge">' + initials + '</span>' +
+          '<span class="stars">' + starsStr + '</span>' +
+        '</div>' +
+        '<div class="deal-body">' +
+          '<div class="deal-title">' + escapeHtml(d.hotelName) + '</div>' +
+          '<div class="deal-loc">' + escapeHtml(d.region) + ', Antalya · ' + escapeHtml(d.roomType) + '</div>' +
+          '<div class="deal-amenities">' + amenitiesHtml + '</div>' +
+          '<div id="dealBottom-' + d.flashSaleId + '">' + cardBottomHtml(d) + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderDealsGrid(deals) {
+    var grid = document.getElementById('dealsGrid');
+    var emptyEl = document.getElementById('dealsEmpty');
+    if (!deals.length) {
+      grid.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+    grid.innerHTML = deals.map(renderDealCard).join('');
+  }
+
+  function loadDealsWithSkeleton() {
+    var grid = document.getElementById('dealsGrid');
+    var skeletons = [];
+    for (var i = 0; i < 6; i++) skeletons.push('<div class="skeleton skeleton-card"></div>');
+    grid.innerHTML = skeletons.join('');
+    setTimeout(function () { refreshDealsData(); }, 400);
+  }
+
+  function refreshDealsData() {
+    var deals = OD.getCustomerDeals(currentFilters);
+    renderedDeals = deals;
+    renderDealsGrid(deals);
+  }
+
+  // ---- live countdown loop ----
+  function tickCountdowns() {
+    var now = Date.now();
+
+    renderedDeals.forEach(function (d) {
+      if (d.state !== 'ACTIVE') return;
+      var remaining = d.endsAt - now;
+      if (remaining <= 0) {
+        d.state = 'EXPIRED';
+        var bottomEl = document.getElementById('dealBottom-' + d.flashSaleId);
+        if (bottomEl) bottomEl.innerHTML = cardBottomHtml(d);
+        var cardEl = document.querySelector('.deal-card[data-card-id="' + d.flashSaleId + '"]');
+        if (cardEl) cardEl.classList.add('is-inactive');
+      } else {
+        var el = document.querySelector('.countdown[data-countdown-id="' + d.flashSaleId + '"]');
+        if (el) {
+          el.textContent = formatCountdown(remaining);
+          el.classList.toggle('urgent', remaining < 3600000);
+        }
+      }
+    });
+
+    if (activeDetailDeal && activeDetailDeal.state === 'ACTIVE') {
+      var modalCd = document.getElementById('modalCountdown');
+      if (modalCd) {
+        var rem = activeDetailDeal.endsAt - now;
+        if (rem <= 0) {
+          activeDetailDeal.state = 'EXPIRED';
+          showDetailView(activeDetailDeal);
+        } else {
+          modalCd.textContent = formatCountdown(rem);
+          modalCd.classList.toggle('urgent', rem < 3600000);
+        }
+      }
+    }
+  }
+
+  function startTimers() {
+    setInterval(tickCountdowns, 1000);
+    setInterval(function () { refreshDealsData(); }, 5000);
+  }
+
+  // ---- filters ----
+  function setRegion(region) {
+    currentFilters.region = region;
+    document.querySelectorAll('#regionChipsMobile .chip').forEach(function (ch) {
+      ch.classList.toggle('active', ch.getAttribute('data-region') === region);
+    });
+    var radio = document.querySelector('input[name="region"][value="' + region + '"]');
+    if (radio) radio.checked = true;
+    refreshDealsData();
+  }
+
+  function resetFilters() {
+    currentFilters = { region: 'all', maxPrice: 200, minStars: 0, minDiscount: 0, breakfast: false, pool: false, seaView: false };
+    var allRegion = document.querySelector('input[name="region"][value="all"]');
+    if (allRegion) allRegion.checked = true;
+    document.querySelectorAll('#regionChipsMobile .chip').forEach(function (ch) {
+      ch.classList.toggle('active', ch.getAttribute('data-region') === 'all');
+    });
+    document.getElementById('maxPriceRange').value = 200;
+    document.getElementById('maxPriceLabel').textContent = '€200';
+    var starsAll = document.querySelector('input[name="minStars"][value="0"]');
+    if (starsAll) starsAll.checked = true;
+    var discountAll = document.querySelector('input[name="minDiscount"][value="0"]');
+    if (discountAll) discountAll.checked = true;
+    document.getElementById('filterBreakfast').checked = false;
+    document.getElementById('filterPool').checked = false;
+    document.getElementById('filterSeaView').checked = false;
+    refreshDealsData();
+  }
+
+  function setupFilters() {
+    document.querySelectorAll('input[name="region"]').forEach(function (r) {
+      r.addEventListener('change', function () { setRegion(this.value); });
+    });
+    document.querySelectorAll('#regionChipsMobile .chip').forEach(function (ch) {
+      ch.addEventListener('click', function () { setRegion(this.getAttribute('data-region')); });
+    });
+
+    var priceRange = document.getElementById('maxPriceRange');
+    priceRange.addEventListener('input', function () {
+      document.getElementById('maxPriceLabel').textContent = '€' + this.value;
+      currentFilters.maxPrice = parseInt(this.value, 10);
+      refreshDealsData();
+    });
+
+    document.querySelectorAll('input[name="minStars"]').forEach(function (r) {
+      r.addEventListener('change', function () { currentFilters.minStars = parseInt(this.value, 10); refreshDealsData(); });
+    });
+    document.querySelectorAll('input[name="minDiscount"]').forEach(function (r) {
+      r.addEventListener('change', function () { currentFilters.minDiscount = parseInt(this.value, 10); refreshDealsData(); });
+    });
+
+    document.getElementById('filterBreakfast').addEventListener('change', function () { currentFilters.breakfast = this.checked; refreshDealsData(); });
+    document.getElementById('filterPool').addEventListener('change', function () { currentFilters.pool = this.checked; refreshDealsData(); });
+    document.getElementById('filterSeaView').addEventListener('change', function () { currentFilters.seaView = this.checked; refreshDealsData(); });
+
+    document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
+
+    document.querySelectorAll('[data-action="footer-region"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setRegion(this.getAttribute('data-region'));
+        document.getElementById('deals').scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  }
+
+  // ---- login / auth ----
+  function updateAuthUI() {
+    var user = OD.getActiveUser();
+    // Tek sayfada otel/admin panelleri de aynı aktif kullanıcı alanını
+    // kullanır (bkz. hotel.js/admin.js) — üst nav'daki "Giriş" durumu
+    // sadece MÜŞTERİ oturumunu yansıtır, otel/admin girişleri kendi
+    // panellerinde ayrıca gösterilir.
+    document.getElementById('loginNavBtn').textContent = (user && user.role === 'CUSTOMER') ? ('Merhaba, ' + user.name) : 'Giriş';
+  }
+
+  function openLoginModal() { document.getElementById('loginModal').classList.add('show'); }
+  function closeLoginModal() { document.getElementById('loginModal').classList.remove('show'); }
+
+  function setupLoginModal() {
+    document.getElementById('loginCustomerBtn').addEventListener('click', function () {
+      OD.setActiveUser({ role: 'CUSTOMER', name: 'Misafir' });
+      updateAuthUI();
+      closeLoginModal();
+      showToast('Müşteri olarak giriş yapıldı.', 'success');
+    });
+    document.getElementById('loginHotelBtn').addEventListener('click', function () { closeLoginModal(); if (window.OdaDropApp) window.OdaDropApp.showTab('hotel'); });
+    document.getElementById('loginAdminBtn').addEventListener('click', function () { closeLoginModal(); if (window.OdaDropApp) window.OdaDropApp.showTab('admin'); });
+    document.getElementById('loginModalClose').addEventListener('click', closeLoginModal);
+    document.getElementById('loginNavBtn').addEventListener('click', openLoginModal);
+    document.getElementById('bottomNavLoginBtn').addEventListener('click', openLoginModal);
+    document.getElementById('footLoginBtn').addEventListener('click', openLoginModal);
+
+    if (!OD.getActiveUser()) openLoginModal();
+  }
+
+  // ---- bookings list modal ----
+  function renderBookingsList() {
+    var db = OD.getDb();
+    var bookings = (db && db.bookings) || [];
+    var body = document.getElementById('bookingsModalBody');
+    if (!bookings.length) {
+      body.innerHTML = '<div class="empty-state">' +
+        '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 2v4M16 2v4"></path></svg>' +
+        '<p>Henüz bir rezervasyonunuz yok.</p></div>';
+      return;
+    }
+    var rows = bookings.map(function (b) {
+      var statusBadge = b.status === 'CONFIRMED'
+        ? '<span class="badge badge-success">Onaylandı</span>'
+        : '<span class="badge badge-muted">' + escapeHtml(b.status) + '</span>';
+      return '<tr>' +
+        '<td>' + escapeHtml(b.id) + '</td>' +
+        '<td>' + escapeHtml(b.hotelName) + '</td>' +
+        '<td>' + escapeHtml(b.roomType) + '</td>' +
+        '<td>' + escapeHtml(b.checkInLabel) + '</td>' +
+        '<td>€' + b.totalPrice + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '</tr>';
+    }).join('');
+    body.innerHTML = '<div class="table-wrap"><table class="table"><thead><tr>' +
+      '<th>No</th><th>Otel</th><th>Oda</th><th>Giriş</th><th>Tutar</th><th>Durum</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function openBookingsModal() {
+    renderBookingsList();
+    document.getElementById('bookingsModal').classList.add('show');
+  }
+  function closeBookingsModal() { document.getElementById('bookingsModal').classList.remove('show'); }
+
+  function setupBookingsModal() {
+    document.getElementById('bookingsModalClose').addEventListener('click', closeBookingsModal);
+    document.getElementById('navBookingsLink').addEventListener('click', function (e) { e.preventDefault(); openBookingsModal(); });
+    document.getElementById('bottomNavBookings').addEventListener('click', openBookingsModal);
+    document.getElementById('footBookingsBtn').addEventListener('click', openBookingsModal);
+  }
+
+  // ---- deal detail + booking wizard ----
+  function wizardDotsHtml(step) {
+    var dots = '';
+    for (var i = 1; i <= 4; i++) dots += '<div class="dot' + (i <= step ? ' done' : '') + '"></div>';
+    return '<div class="wizard-steps">' + dots + '</div>';
+  }
+
+  function detailViewHtml(deal) {
+    var checkIn = OD.tomorrowDate();
+    var checkOut = new Date(checkIn.getTime() + 86400000);
+    var checkOutLabel = OD.formatDateLabel(checkOut);
+    var amenitiesHtml = (deal.amenities || []).map(function (a) {
+      return '<span class="badge badge-muted">' + escapeHtml(a) + '</span>';
+    }).join('');
+
+    var ctaBlock;
+    if (deal.state === 'SOLD_OUT') {
+      ctaBlock = '<button class="btn btn-outline btn-block btn-lg" disabled>Bu fırsat tükendi</button>';
+    } else if (deal.state === 'EXPIRED') {
+      ctaBlock = '<button class="btn btn-outline btn-block btn-lg" disabled>Flash sale sona erdi</button>';
+    } else {
+      ctaBlock =
+        '<button class="btn btn-primary btn-block btn-lg" id="startBookingBtn">€' + deal.price + '\'e Rezervasyon Yap</button>' +
+        '<div class="alert alert-warning mt-16">⚠️ Bu flash-sale rezervasyonu iade edilemez ve tarih değişikliği yapılamaz.</div>';
+    }
+
+    return (
+      '<div class="detail-cover" style="background:linear-gradient(135deg,' + deal.gradient[0] + ',' + deal.gradient[1] + ')">' +
+        '<span class="discount-ribbon">-%' + deal.discountPct + '</span>' +
+        '<span class="stars">' + '★'.repeat(deal.stars) + '</span>' +
+      '</div>' +
+      '<h3 class="mb-8">' + escapeHtml(deal.hotelName) + '</h3>' +
+      '<div class="deal-loc mb-16">' + escapeHtml(deal.region) + ', Antalya · ' + escapeHtml(deal.roomType) + '</div>' +
+      '<p class="text-muted text-sm mb-16">' + escapeHtml(deal.description) + '</p>' +
+      '<div class="deal-amenities mb-16">' + amenitiesHtml + '</div>' +
+      '<div class="grid-2 mb-16">' +
+        '<div class="card card-pad"><div class="stat-label">Giriş</div><div style="font-weight:700;">' + escapeHtml(deal.checkInLabel) + '</div></div>' +
+        '<div class="card card-pad"><div class="stat-label">Çıkış</div><div style="font-weight:700;">' + escapeHtml(checkOutLabel) + '</div></div>' +
+      '</div>' +
+      '<div class="flex-between mb-16">' +
+        '<div><span class="price-old">€' + deal.referencePrice + '</span> <span class="price-new">€' + deal.price + '</span></div>' +
+        '<div class="text-sm text-muted">' + deal.quantityRemaining + ' oda kaldı</div>' +
+      '</div>' +
+      (deal.state === 'ACTIVE' ? '<div class="countdown mb-16" id="modalCountdown">--:--:--</div>' : '') +
+      ctaBlock
+    );
+  }
+
+  function showDetailView(deal) {
+    document.getElementById('detailModalTitle').textContent = deal.hotelName;
+    document.getElementById('detailModalBody').innerHTML = detailViewHtml(deal);
+    var startBtn = document.getElementById('startBookingBtn');
+    if (startBtn) {
+      startBtn.addEventListener('click', function () {
+        var user = OD.getActiveUser();
+        if (!user) {
+          openLoginModal();
+          showToast('Rezervasyon yapmak için önce giriş yapmalısınız.', 'danger');
+          return;
+        }
+        bookingState = { flashSaleId: deal.flashSaleId, qty: 1, guestName: '', guestEmail: '', accepted: false };
+        goToStep(1, deal);
+      });
+    }
+  }
+
+  function wizardStep1Html(deal) {
+    var max = deal.quantityRemaining;
+    return wizardDotsHtml(1) +
+      '<div class="wizard-step-label">Adım 1/4 · Oda Seç</div>' +
+      '<p class="text-sm text-muted mb-16">' + escapeHtml(deal.hotelName) + ' · ' + escapeHtml(deal.roomType) + '</p>' +
+      '<div class="field"><label>Oda Adedi</label>' +
+        '<input type="number" id="wizardQty" min="1" max="' + max + '" value="' + bookingState.qty + '">' +
+      '</div>' +
+      '<p class="text-sm text-muted mb-16">En fazla ' + max + ' oda seçebilirsiniz.</p>' +
+      '<div class="flex-between mb-16"><span class="text-muted text-sm">Toplam</span><span class="price-new" id="wizardStep1Total">€' + (deal.price * bookingState.qty) + '</span></div>' +
+      '<button class="btn btn-primary btn-block btn-lg" id="wizardNext1">Devam Et</button>';
+  }
+
+  function wizardStep2Html() {
+    var user = OD.getActiveUser();
+    var prefillName = bookingState.guestName || (user ? user.name : '') || '';
+    var prefillEmail = bookingState.guestEmail || (user && user.email ? user.email : '');
+    return wizardDotsHtml(2) +
+      '<div class="wizard-step-label">Adım 2/4 · Misafir Bilgileri</div>' +
+      '<div class="field"><label>Ad Soyad</label><input type="text" id="wizardGuestName" value="' + escapeHtml(prefillName) + '" placeholder="Ad Soyad"></div>' +
+      '<div class="field"><label>E-posta</label><input type="email" id="wizardGuestEmail" value="' + escapeHtml(prefillEmail) + '" placeholder="ornek@eposta.com"></div>' +
+      '<div class="wizard-actions">' +
+        '<button class="btn btn-outline" id="wizardBack2">Geri</button>' +
+        '<button class="btn btn-primary" id="wizardNext2">Devam Et</button>' +
+      '</div>';
+  }
+
+  function wizardStep3Html() {
+    return wizardDotsHtml(3) +
+      '<div class="wizard-step-label">Adım 3/4 · Non-Refundable Kabulü</div>' +
+      '<div class="alert alert-warning mb-16">⚠️ Önemli — Bu özel flash-sale fiyatı iade edilemez ve tarih değişikliği yapılamaz.</div>' +
+      '<label class="check-row"><input type="checkbox" id="wizardAcceptCheckbox"' + (bookingState.accepted ? ' checked' : '') + '> Flash sale\'in iade edilemez olduğunu ve tarih değiştirilemeyeceğini kabul ediyorum.</label>' +
+      '<div class="wizard-actions">' +
+        '<button class="btn btn-outline" id="wizardBack3">Geri</button>' +
+        '<button class="btn btn-primary" id="wizardNext3">Devam Et</button>' +
+      '</div>';
+  }
+
+  function wizardStep4Html(deal) {
+    var payDisabled = !bookingState.accepted;
+    return wizardDotsHtml(4) +
+      '<div class="wizard-step-label">Adım 4/4 · Ödeme (Mock)</div>' +
+      '<div class="field"><label>Kart Numarası</label><input type="text" id="wizardCardNumber" value="4242 4242 4242 4242"></div>' +
+      '<div class="form-grid cols-2">' +
+        '<div class="field"><label>Son Kullanma</label><input type="text" id="wizardCardExpiry" value="12/30"></div>' +
+        '<div class="field"><label>CVV</label><input type="text" id="wizardCardCvv" value="123"></div>' +
+      '</div>' +
+      (payDisabled ? '<div class="alert alert-warning mb-16">Ödemeye devam etmek için bir önceki adımdaki iade edilemez koşulunu kabul etmelisiniz.</div>' : '') +
+      '<div id="wizardPayError"></div>' +
+      '<div class="flex-between mb-16"><span class="text-muted text-sm">Toplam</span><span class="price-new">€' + (deal.price * bookingState.qty) + '</span></div>' +
+      '<div class="wizard-actions">' +
+        '<button class="btn btn-outline" id="wizardBack4">Geri</button>' +
+        '<button class="btn btn-primary" id="wizardPayBtn"' + (payDisabled ? ' disabled' : '') + '>Ödemeyi Tamamla</button>' +
+      '</div>';
+  }
+
+  function successViewHtml(booking) {
+    return '<div class="text-center">' +
+      '<div class="success-emoji">🎉</div>' +
+      '<h3 class="mb-8">Rezervasyonunuz hazır!</h3>' +
+      '<p class="text-muted text-sm mb-16">Rezervasyon No: <strong>' + escapeHtml(booking.id) + '</strong></p>' +
+      '<div class="card card-pad mb-16" style="text-align:left;">' +
+        '<div class="flex-between mb-8"><span class="text-muted text-sm">Otel</span><span>' + escapeHtml(booking.hotelName) + '</span></div>' +
+        '<div class="flex-between mb-8"><span class="text-muted text-sm">Oda</span><span>' + escapeHtml(booking.roomType) + '</span></div>' +
+        '<div class="flex-between mb-8"><span class="text-muted text-sm">Adet</span><span>' + booking.qty + '</span></div>' +
+        '<div class="flex-between"><span class="text-muted text-sm">Toplam</span><span class="price-new">€' + booking.totalPrice + '</span></div>' +
+      '</div>' +
+      '<button class="btn btn-primary btn-block btn-lg" id="successCloseBtn">Harika!</button>' +
+    '</div>';
+  }
+
+  function goToStep(step, deal) {
+    var body = document.getElementById('detailModalBody');
+    if (step === 1) {
+      body.innerHTML = wizardStep1Html(deal);
+      bindStep1(deal);
+    } else if (step === 2) {
+      body.innerHTML = wizardStep2Html();
+      bindStep2(deal);
+    } else if (step === 3) {
+      body.innerHTML = wizardStep3Html();
+      bindStep3(deal);
+    } else if (step === 4) {
+      body.innerHTML = wizardStep4Html(deal);
+      bindStep4(deal);
+    }
+  }
+
+  function bindStep1(deal) {
+    var qtyInput = document.getElementById('wizardQty');
+    var totalEl = document.getElementById('wizardStep1Total');
+    qtyInput.addEventListener('input', function () {
+      var v = parseInt(this.value, 10) || 1;
+      var max = deal.quantityRemaining;
+      if (v < 1) v = 1;
+      if (v > max) v = max;
+      this.value = v;
+      bookingState.qty = v;
+      totalEl.textContent = '€' + (deal.price * v);
+    });
+    document.getElementById('wizardNext1').addEventListener('click', function () {
+      var v = parseInt(qtyInput.value, 10) || 1;
+      bookingState.qty = v;
+      goToStep(2, deal);
+    });
+  }
+
+  function bindStep2(deal) {
+    document.getElementById('wizardBack2').addEventListener('click', function () { goToStep(1, deal); });
+    document.getElementById('wizardNext2').addEventListener('click', function () {
+      bookingState.guestName = document.getElementById('wizardGuestName').value.trim();
+      bookingState.guestEmail = document.getElementById('wizardGuestEmail').value.trim();
+      goToStep(3, deal);
+    });
+  }
+
+  function bindStep3(deal) {
+    document.getElementById('wizardBack3').addEventListener('click', function () { goToStep(2, deal); });
+    document.getElementById('wizardNext3').addEventListener('click', function () {
+      bookingState.accepted = document.getElementById('wizardAcceptCheckbox').checked;
+      goToStep(4, deal);
+    });
+  }
+
+  function bindStep4(deal) {
+    document.getElementById('wizardBack4').addEventListener('click', function () { goToStep(3, deal); });
+    var payBtn = document.getElementById('wizardPayBtn');
+    if (payBtn) {
+      payBtn.addEventListener('click', function () {
+        var result = OD.bookFlashSale({
+          flashSaleId: bookingState.flashSaleId,
+          qty: bookingState.qty,
+          guestName: bookingState.guestName || 'Misafir',
+          guestEmail: bookingState.guestEmail,
+          acceptedNonRefundable: bookingState.accepted
+        });
+
+        if (!result.ok) {
+          showToast(result.error, 'danger');
+          var errBox = document.getElementById('wizardPayError');
+          if (errBox) errBox.innerHTML = '<div class="alert alert-danger mb-16">' + escapeHtml(result.error) + '</div>';
+          return;
+        }
+
+        showToast('Rezervasyon oluşturuldu.', 'success');
+        setTimeout(function () { showToast('Ödeme başarılı.', 'success'); }, 350);
+
+        document.getElementById('detailModalTitle').textContent = 'Rezervasyon Onayı';
+        document.getElementById('detailModalBody').innerHTML = successViewHtml(result.booking);
+        document.getElementById('successCloseBtn').addEventListener('click', function () {
+          closeDetailModal();
+        });
+
+        refreshDealsData();
+      });
+    }
+  }
+
+  function openDetailModal(id) {
+    var deal = renderedDeals.find(function (d) { return d.flashSaleId === id; });
+    if (!deal) {
+      var fresh = OD.getCustomerDeals();
+      deal = fresh.find(function (d) { return d.flashSaleId === id; });
+    }
+    if (!deal) return;
+    activeDetailDeal = deal;
+    bookingState = { flashSaleId: id, qty: 1, guestName: '', guestEmail: '', accepted: false };
+    document.getElementById('detailModal').classList.add('show');
+    showDetailView(deal);
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('show');
+    activeDetailDeal = null;
+    refreshDealsData();
+  }
+
+  function setupDetailModal() {
+    document.getElementById('detailModalClose').addEventListener('click', closeDetailModal);
+    document.getElementById('dealsGrid').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action="view-deal"]');
+      if (btn) openDetailModal(btn.getAttribute('data-id'));
+    });
+  }
+
+  // ---- nav / hero ----
+  function setupNav() {
+    document.getElementById('showDealsBtn').addEventListener('click', function () {
+      document.getElementById('deals').scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('bottomNavDeals').addEventListener('click', function () {
+      document.getElementById('deals').scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('bottomNavHotel').addEventListener('click', function () {
+      if (window.OdaDropApp) window.OdaDropApp.showTab('hotel');
+    });
+  }
+
+  function populateHero() {
+    document.getElementById('tomorrowDateField').value = OD.formatDateLabel(OD.tomorrowDate());
+  }
+
+  // ---- init ----
+  function init() {
+    OD.seedIfEmpty();
+    populateHero();
+    setupLoginModal();
+    updateAuthUI();
+    setupNav();
+    setupFilters();
+    setupBookingsModal();
+    setupDetailModal();
+    loadDealsWithSkeleton();
+    startTimers();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+
+  </script>
+  <script>
+/* ---- assets/hotel.js (inline) ---- */
+/*
+ * OdaDrop — hotel.html sayfa mantığı.
+ * Tüm iş kuralları / sayı hesaplamaları window.OdaDrop (state.js) üzerinden
+ * yapılır; burada sadece ekran/etkileşim mantığı ve basit görüntü
+ * biçimlendirmesi (yuvarlama, € öneki) vardır.
+ */
+(function () {
+  'use strict';
+
+  var OD = window.OdaDrop;
+  var HOTEL_ID = 'lara-resort';
+
+  var state = {
+    tab: 'dashboard',
+    selectedInventoryType: null
+  };
+
+  var wiz = {
+    step: 1,
+    roomType: null,
+    quantity: 1,
+    price: '',
+    durationHours: 12
+  };
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    bindStaticEvents();
+    render();
+  }
+
+  // ---------------- helpers ----------------
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function round2(n) {
+    return Math.round(n * 100) / 100;
+  }
+
+  function statCard(label, value) {
+    return '<div class="stat-card"><div class="stat-label">' + esc(String(label)) + '</div>' +
+      '<div class="stat-value">' + esc(String(value)) + '</div></div>';
+  }
+
+  function showToast(msg, type) {
+    var wrap = document.getElementById('toastWrap');
+    var t = document.createElement('div');
+    t.className = 'toast' + (type === 'danger' ? ' toast-danger' : type === 'success' ? ' toast-success' : '');
+    t.textContent = msg;
+    wrap.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () {
+      t.classList.remove('show');
+      setTimeout(function () { if (t.parentNode) wrap.removeChild(t); }, 300);
+    }, 3500);
+  }
+
+  function getRoomDetail(dash, type) {
+    var found = null;
+    dash.rooms.forEach(function (r) { if (r.type === type) found = r; });
+    return found;
+  }
+
+  // ---------------- top-level render ----------------
+
+  function render() {
+    var user = OD.getActiveUser();
+    if (user && user.role === 'HOTEL') {
+      showDashboard();
+    } else {
+      showLogin();
+    }
+  }
+
+  function showLogin() {
+    document.getElementById('hotelLoginView').classList.remove('hidden');
+    document.getElementById('hotelDashboardView').classList.add('hidden');
+    document.getElementById('hotelNavRight').innerHTML = '';
+  }
+
+  function showDashboard() {
+    document.getElementById('hotelLoginView').classList.add('hidden');
+    document.getElementById('hotelDashboardView').classList.remove('hidden');
+    var user = OD.getActiveUser();
+    var hotelNavRight = document.getElementById('hotelNavRight');
+    hotelNavRight.innerHTML =
+      '<span class="badge badge-muted">' + esc(user.name) + '</span>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="hotelLogoutBtn">Çıkış yap</button>';
+    document.getElementById('hotelLogoutBtn').addEventListener('click', function () {
+      OD.setActiveUser(null);
+      render();
+    });
+    switchTab(state.tab || 'dashboard');
+  }
+
+  function bindStaticEvents() {
+    document.getElementById('hotelLoginBtn').addEventListener('click', function () {
+      OD.setActiveUser({ role: 'HOTEL', hotelId: HOTEL_ID, name: 'The Lara Resort' });
+      render();
+    });
+    document.getElementById('hotelTabBar').addEventListener('click', function (e) {
+      var btn = e.target.closest('.chip');
+      if (!btn) return;
+      switchTab(btn.dataset.tab);
+    });
+  }
+
+  function switchTab(tabName) {
+    state.tab = tabName;
+    document.querySelectorAll('#hotelTabBar .chip').forEach(function (c) {
+      c.classList.toggle('active', c.dataset.tab === tabName);
+    });
+    var panels = {
+      dashboard: 'htab-dashboard',
+      flash: 'htab-flash',
+      inventory: 'htab-inventory',
+      bookings: 'htab-bookings',
+      revenue: 'htab-revenue',
+      settings: 'htab-settings'
+    };
+    Object.keys(panels).forEach(function (key) {
+      document.getElementById(panels[key]).classList.toggle('hidden', key !== tabName);
+    });
+    if (tabName === 'dashboard') renderDashboardTab();
+    if (tabName === 'flash') renderFlashTab();
+    if (tabName === 'inventory') renderInventoryTab();
+    if (tabName === 'bookings') renderBookingsTab();
+    if (tabName === 'revenue') renderRevenueTab();
+    if (tabName === 'settings') renderSettingsTab();
+  }
+
+  function openWizardWithRoomType(type) {
+    wiz.step = 1;
+    wiz.roomType = type;
+    wiz.quantity = 1;
+    wiz.price = '';
+    wiz.durationHours = 12;
+    switchTab('flash');
+  }
+
+  // ---------------- Dashboard tab ----------------
+
+  function renderDashboardTab() {
+    var dash = OD.hotelDashboard(HOTEL_ID);
+    var container = document.getElementById('htab-dashboard');
+    var featuredType = null;
+
+    var html = '<h2>Yarın — ' + esc(dash.tomorrowLabel) + '</h2>';
+    html += '<div class="stat-grid mt-16">' +
+      statCard('Toplam Oda', dash.totalRooms) +
+      statCard('Satılan', dash.occupiedRooms) +
+      statCard('Boş', dash.availableRooms) +
+      statCard("Flash'a Uygun", dash.flashEligible) +
+      statCard('Tahmini Flash Geliri', '€' + dash.estimatedFlashRevenue) +
+      '</div>';
+
+    if (dash.flashEligible > 0) {
+      var featured = dash.rooms.reduce(function (best, r) {
+        return (!best || r.flashEligible > best.flashEligible) ? r : best;
+      }, null);
+      featuredType = featured.type;
+      var check = OD.validateFlashPrice(featured.minFlashPrice, featured.referencePrice);
+      var lowSales = Math.max(0, Math.floor(featured.flashEligible * 0.5));
+      var highSales = Math.max(lowSales, Math.ceil(featured.flashEligible * 0.78));
+      var lowRev = lowSales * featured.minFlashPrice;
+      var highRev = highSales * featured.minFlashPrice;
+
+      html += '<div class="card card-pad mt-24">' +
+        '<h3>🔥 Yarın ' + dash.flashEligible + ' odanızın boş kalma riski yüksek.</h3>' +
+        '<p class="text-sm text-muted mt-8">Öne çıkan oda tipi: <strong>' + esc(featured.type) + '</strong></p>' +
+        '<div class="form-grid cols-2 mt-16">' +
+        '<div><div class="stat-label">Reference Price</div><div class="stat-value">€' + featured.referencePrice + '</div></div>' +
+        '<div><div class="stat-label">Minimum Flash Price</div><div class="stat-value">€' + featured.minFlashPrice + '</div></div>' +
+        '<div><div class="stat-label">Önerilen Flash Price</div><div class="stat-value">€' + featured.minFlashPrice + '</div></div>' +
+        '<div><div class="stat-label">İndirim</div><div class="stat-value">%' + check.discountPct + '</div></div>' +
+        '</div>' +
+        '<p class="text-sm text-muted mt-16">Tahmini satış (kabaca %50–%78 arası): <strong>' + lowSales + '–' + highSales + ' oda</strong> &middot; ' +
+        'Tahmini gelir: <strong>€' + lowRev + '–€' + highRev + '</strong></p>' +
+        '<button type="button" class="btn btn-primary mt-16" id="dashFlashCta">Flash Sale Oluştur</button>' +
+        '</div>';
+    }
+
+    container.innerHTML = html;
+
+    var cta = document.getElementById('dashFlashCta');
+    if (cta) {
+      cta.addEventListener('click', function () {
+        openWizardWithRoomType(featuredType);
+      });
+    }
+  }
+
+  // ---------------- Inventory tab ----------------
+
+  function renderInventoryTab() {
+    var dash = OD.hotelDashboard(HOTEL_ID);
+    var container = document.getElementById('htab-inventory');
+
+    var rows = dash.rooms.map(function (r) {
+      var checked = state.selectedInventoryType === r.type ? ' checked' : '';
+      var badge = r.status === 'Uygun'
+        ? '<span class="badge badge-success">Uygun</span>'
+        : '<span class="badge badge-muted">Uygun Değil</span>';
+      return '<tr>' +
+        '<td><input type="checkbox" class="inv-check" data-type="' + esc(r.type) + '"' + checked + '></td>' +
+        '<td>' + esc(r.type) + '</td>' +
+        '<td>€' + r.referencePrice + '</td>' +
+        '<td>' + r.available + '</td>' +
+        '<td>' + r.flashRemaining + '</td>' +
+        '<td>' + badge + '</td>' +
+        '</tr>';
+    }).join('');
+
+    container.innerHTML =
+      '<h2>Envanter</h2>' +
+      '<div class="table-wrap mt-16"><table class="table"><thead><tr>' +
+      '<th></th><th>Oda</th><th>Reference</th><th>Boş</th><th>Flash Limit</th><th>Durum</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div id="invActionRow" class="mt-16"></div>';
+
+    var checks = container.querySelectorAll('.inv-check');
+    checks.forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        if (cb.checked) {
+          checks.forEach(function (other) { if (other !== cb) other.checked = false; });
+          state.selectedInventoryType = cb.dataset.type;
+        } else {
+          state.selectedInventoryType = null;
+        }
+        updateInvActionRow();
+      });
+    });
+    updateInvActionRow();
+
+    function updateInvActionRow() {
+      var row = document.getElementById('invActionRow');
+      if (!row) return;
+      if (state.selectedInventoryType) {
+        row.innerHTML = '<button type="button" class="btn btn-primary" id="invFlashBtn">Bu oda tipiyle Flash Sale oluştur</button>';
+        document.getElementById('invFlashBtn').addEventListener('click', function () {
+          openWizardWithRoomType(state.selectedInventoryType);
+        });
+      } else {
+        row.innerHTML = '';
+      }
+    }
+  }
+
+  // ---------------- Flash Sale wizard tab ----------------
+
+  function stepTitle(n) {
+    return ['Oda Tipi & Adet', 'Fiyat', 'Süre', 'Önizleme', 'Komisyon', 'Yayınla'][n - 1];
+  }
+
+  function dotsHTML() {
+    var html = '';
+    for (var i = 1; i <= 6; i++) {
+      html += '<span class="dot' + (i <= wiz.step ? ' done' : '') + '"></span>';
+    }
+    return html;
+  }
+
+  function renderFlashTab() {
+    var dash = OD.hotelDashboard(HOTEL_ID);
+    var eligibleRooms = dash.rooms.filter(function (r) { return r.flashRemaining > 0; });
+    var container = document.getElementById('htab-flash');
+
+    if (eligibleRooms.length === 0) {
+      container.innerHTML = '<h2>Flash Sale</h2>' +
+        '<div class="empty-state">Şu an flash sale açabileceğiniz uygun oda bulunmuyor.</div>';
+      return;
+    }
+
+    if (!wiz.roomType || !eligibleRooms.some(function (r) { return r.type === wiz.roomType; })) {
+      wiz.roomType = eligibleRooms[0].type;
+      wiz.quantity = 1;
+    }
+
+    var body;
+    if (wiz.step === 1) body = step1HTML(eligibleRooms);
+    else if (wiz.step === 2) body = step2HTML(dash);
+    else if (wiz.step === 3) body = step3HTML();
+    else if (wiz.step === 4) body = step4HTML(dash);
+    else if (wiz.step === 5) body = step5HTML(dash);
+    else body = step6HTML();
+
+    container.innerHTML =
+      '<h2>Flash Sale Oluştur</h2>' +
+      '<div class="card card-pad mt-16">' +
+      '<div class="wizard-step-label">Adım ' + wiz.step + ' / 6 — ' + stepTitle(wiz.step) + '</div>' +
+      '<div class="wizard-steps">' + dotsHTML() + '</div>' +
+      '<div id="wizStepBody">' + body + '</div>' +
+      '<div class="flex gap-12 mt-24">' +
+      (wiz.step > 1 ? '<button type="button" class="btn btn-outline" id="wizBackBtn">Geri</button>' : '') +
+      (wiz.step < 6 ? '<button type="button" class="btn btn-primary" id="wizNextBtn">İleri</button>' : '') +
+      '</div>' +
+      '</div>';
+
+    bindWizardEvents(dash, eligibleRooms);
+  }
+
+  function step1HTML(eligibleRooms) {
+    var room = eligibleRooms.filter(function (r) { return r.type === wiz.roomType; })[0] || eligibleRooms[0];
+    var options = eligibleRooms.map(function (r) {
+      return '<option value="' + esc(r.type) + '"' + (r.type === wiz.roomType ? ' selected' : '') + '>' +
+        esc(r.type) + ' (maks ' + r.flashRemaining + ')</option>';
+    }).join('');
+    return '<div class="field"><label>Oda Tipi</label><select id="wizRoomType">' + options + '</select></div>' +
+      '<div class="field"><label>Adet</label><input type="number" min="1" max="' + room.flashRemaining + '" id="wizQuantity" value="' + wiz.quantity + '"></div>' +
+      '<p class="text-sm text-muted" id="wizMaxText">Maksimum ' + room.flashRemaining + ' oda</p>' +
+      '<div id="wizStep1Msg"></div>';
+  }
+
+  function step2HTML(dash) {
+    var room = getRoomDetail(dash, wiz.roomType);
+    return '<div class="stat-grid">' +
+      '<div class="stat-card"><div class="stat-label">Reference Price</div><div class="stat-value">€' + room.referencePrice + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Minimum Flash Price</div><div class="stat-value">€' + room.minFlashPrice + '</div></div>' +
+      '</div>' +
+      '<div class="field mt-16"><label>Flash Fiyat (€)</label><input type="number" min="1" id="wizPrice" value="' + (wiz.price === '' ? '' : wiz.price) + '"></div>' +
+      '<div id="wizPriceValidation"></div>';
+  }
+
+  function step3HTML() {
+    var opts = [6, 12, 24];
+    return '<div class="radio-row">' + opts.map(function (h) {
+      return '<button type="button" class="radio-pill' + (wiz.durationHours === h ? ' active' : '') + '" data-hours="' + h + '">' + h + ' saat</button>';
+    }).join('') + '</div>';
+  }
+
+  function step4HTML(dash) {
+    var room = getRoomDetail(dash, wiz.roomType);
+    var hotel = dash.hotel;
+    var check = OD.validateFlashPrice(wiz.price || 0, room.referencePrice);
+    var g = hotel.gradient || ['#ff9966', '#ff5e62'];
+    var stars = '';
+    for (var i = 0; i < hotel.stars; i++) stars += '⭐';
+    return '<div class="deal-card" style="max-width:320px;">' +
+      '<div class="deal-cover" style="background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ');">' +
+      '<span class="discount-ribbon">%' + check.discountPct + ' indirim</span>' +
+      '<span class="urgent-ribbon">' + wiz.durationHours + ' saat</span>' +
+      '<span class="stars">' + stars + '</span>' +
+      '</div>' +
+      '<div class="deal-body">' +
+      '<div class="deal-title">' + esc(hotel.name) + '</div>' +
+      '<div class="deal-loc">' + esc(hotel.region) + ' &middot; ' + esc(room.type) + '</div>' +
+      '<div class="deal-amenities">' + (hotel.amenities || []).map(function (a) {
+        return '<span class="badge badge-muted">' + esc(a) + '</span>';
+      }).join('') + '</div>' +
+      '<div class="price-row"><span class="price-old">€' + room.referencePrice + '</span><span class="price-new">€' + (wiz.price || 0) + '</span></div>' +
+      '<div class="text-sm text-muted">Kalan: ' + wiz.quantity + ' oda</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function step5HTML(dash) {
+    var price = wiz.price || 0;
+    var qty = wiz.quantity || 0;
+    var rate = OD.COMMISSION_RATE;
+    var unitCommission = round2(price * rate);
+    var unitNet = round2(price - unitCommission);
+    var totalPrice = price * qty;
+    var totalCommission = round2(totalPrice * rate);
+    var totalNet = round2(totalPrice - totalCommission);
+    return '<div class="card card-pad">' +
+      '<p>Flash fiyat: <strong>€' + price + '</strong></p>' +
+      '<p>OdaDrop komisyonu (%' + Math.round(rate * 100) + '): <strong>€' + unitCommission + '</strong></p>' +
+      '<p>Otel net: <strong>€' + unitNet + '</strong></p>' +
+      '<hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">' +
+      '<p>' + qty + ' oda satılırsa: Otel <strong>€' + totalNet + '</strong>, OdaDrop <strong>€' + totalCommission + '</strong></p>' +
+      '</div>';
+  }
+
+  function step6HTML() {
+    return '<div class="card card-pad">' +
+      '<p><strong>Oda Tipi:</strong> ' + esc(wiz.roomType) + '</p>' +
+      '<p><strong>Adet:</strong> ' + wiz.quantity + '</p>' +
+      '<p><strong>Flash Fiyat:</strong> €' + wiz.price + '</p>' +
+      '<p><strong>Süre:</strong> ' + wiz.durationHours + ' saat</p>' +
+      '</div>' +
+      '<div id="wizPublishError" class="mt-16"></div>' +
+      '<button type="button" class="btn btn-primary btn-block mt-16" id="wizPublishBtn">Flash Sale\'i Yayınla</button>';
+  }
+
+  function isStepValid(step, dash) {
+    var room = getRoomDetail(dash, wiz.roomType);
+    if (step === 1) return wiz.quantity >= 1 && wiz.quantity <= room.flashRemaining;
+    if (step === 2) return OD.validateFlashPrice(wiz.price || 0, room.referencePrice).valid;
+    return true;
+  }
+
+  function setNextEnabled(valid) {
+    var nextBtn = document.getElementById('wizNextBtn');
+    if (nextBtn) nextBtn.disabled = !valid;
+  }
+
+  function onQuantityInput(dash) {
+    var room = getRoomDetail(dash, wiz.roomType);
+    var maxText = document.getElementById('wizMaxText');
+    if (maxText) maxText.textContent = 'Maksimum ' + room.flashRemaining + ' oda';
+    var msg = document.getElementById('wizStep1Msg');
+    var valid = wiz.quantity >= 1 && wiz.quantity <= room.flashRemaining;
+    if (msg) {
+      msg.innerHTML = valid ? '' : '<div class="alert alert-danger mt-8">Girilen adet, maksimum ' + room.flashRemaining + ' odayı aşamaz.</div>';
+    }
+    setNextEnabled(valid);
+  }
+
+  function onPriceInput(dash) {
+    var room = getRoomDetail(dash, wiz.roomType);
+    var check = OD.validateFlashPrice(wiz.price || 0, room.referencePrice);
+    var el = document.getElementById('wizPriceValidation');
+    if (el) {
+      el.innerHTML = check.valid
+        ? '<div class="alert alert-success mt-8">✅ Flash fiyat uygun.</div>'
+        : '<div class="alert alert-danger mt-8">❌ Minimum %30 gerçek indirim şartı sağlanmıyor.<br>Bu oda için maksimum satış fiyatı: €' + check.maxAllowed + '</div>';
+    }
+    setNextEnabled(check.valid);
+  }
+
+  function bindWizardEvents(dash, eligibleRooms) {
+    var backBtn = document.getElementById('wizBackBtn');
+    if (backBtn) {
+      backBtn.addEventListener('click', function () {
+        wiz.step = Math.max(1, wiz.step - 1);
+        renderFlashTab();
+      });
+    }
+    var nextBtn = document.getElementById('wizNextBtn');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function () {
+        if (!isStepValid(wiz.step, dash)) return;
+        wiz.step = Math.min(6, wiz.step + 1);
+        renderFlashTab();
+      });
+    }
+
+    if (wiz.step === 1) {
+      var sel = document.getElementById('wizRoomType');
+      sel.addEventListener('change', function (e) {
+        wiz.roomType = e.target.value;
+        wiz.quantity = 1;
+        renderFlashTab();
+      });
+      var qty = document.getElementById('wizQuantity');
+      qty.addEventListener('input', function (e) {
+        wiz.quantity = parseInt(e.target.value, 10) || 0;
+        onQuantityInput(dash);
+      });
+      onQuantityInput(dash);
+    }
+
+    if (wiz.step === 2) {
+      var priceInput = document.getElementById('wizPrice');
+      priceInput.addEventListener('input', function (e) {
+        wiz.price = parseFloat(e.target.value) || 0;
+        onPriceInput(dash);
+      });
+      onPriceInput(dash);
+    }
+
+    if (wiz.step === 3) {
+      var pills = document.querySelectorAll('#htab-flash .radio-pill');
+      pills.forEach(function (p) {
+        p.addEventListener('click', function () {
+          wiz.durationHours = parseInt(p.dataset.hours, 10);
+          renderFlashTab();
+        });
+      });
+    }
+
+    if (wiz.step === 6) {
+      var pubBtn = document.getElementById('wizPublishBtn');
+      if (pubBtn) pubBtn.addEventListener('click', publishFlashSale);
+    }
+  }
+
+  function resetWizard() {
+    wiz.step = 1;
+    wiz.roomType = null;
+    wiz.quantity = 1;
+    wiz.price = '';
+    wiz.durationHours = 12;
+  }
+
+  function publishFlashSale() {
+    var result = OD.createFlashSale({
+      hotelId: HOTEL_ID,
+      roomType: wiz.roomType,
+      quantity: wiz.quantity,
+      price: wiz.price,
+      durationHours: wiz.durationHours
+    });
+
+    if (!result.ok) {
+      showToast('❌ ' + result.error, 'danger');
+      var errEl = document.getElementById('wizPublishError');
+      if (errEl) errEl.innerHTML = '<div class="alert alert-danger">' + esc(result.error) + '</div>';
+      wiz.step = (result.maxAllowed !== undefined) ? 2 : 1;
+      renderFlashTab();
+      return;
+    }
+
+    showToast('✅ Flash Sale yayınlandı.', 'success');
+    resetWizard();
+    switchTab('dashboard');
+  }
+
+  // ---------------- Bookings tab ----------------
+
+  function renderBookingsTab() {
+    var db = OD.getDb();
+    var bookings = (db.bookings || []).filter(function (b) { return b.hotelId === HOTEL_ID; });
+    var container = document.getElementById('htab-bookings');
+
+    if (bookings.length === 0) {
+      container.innerHTML = '<h2>Rezervasyonlar</h2><div class="empty-state">Henüz rezervasyon yok.</div>';
+      return;
+    }
+
+    var rows = bookings.map(function (b) {
+      return '<tr>' +
+        '<td>' + esc(b.id) + '</td>' +
+        '<td>' + esc(b.guestName) + '</td>' +
+        '<td>' + esc(b.roomType) + '</td>' +
+        '<td>' + esc(b.checkInLabel) + '</td>' +
+        '<td>€' + b.unitPrice + '</td>' +
+        '<td>€' + b.commission + '</td>' +
+        '<td><span class="badge badge-success">' + esc(b.status) + '</span></td>' +
+        '</tr>';
+    }).join('');
+
+    container.innerHTML = '<h2>Rezervasyonlar</h2>' +
+      '<div class="table-wrap mt-16"><table class="table"><thead><tr>' +
+      '<th>Booking ID</th><th>Misafir</th><th>Oda</th><th>Tarih</th><th>Flash Price</th><th>Komisyon</th><th>Durum</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // ---------------- Revenue tab ----------------
+
+  function renderRevenueTab() {
+    var rev = OD.computeHotelRevenue(HOTEL_ID);
+    var container = document.getElementById('htab-revenue');
+    container.innerHTML = '<h2>Bu Ay</h2><div class="stat-grid mt-16">' +
+      statCard('Flash GMV', '€' + rev.flashGMV) +
+      statCard('OdaDrop Commission', '€' + rev.commission) +
+      statCard('Net Hotel Revenue', '€' + rev.netRevenue) +
+      statCard('Satılan Flash Oda', rev.roomsSold) +
+      '</div>';
+  }
+
+  // ---------------- Settings tab ----------------
+
+  function renderSettingsTab() {
+    var dash = OD.hotelDashboard(HOTEL_ID);
+    var hotel = dash.hotel;
+    var container = document.getElementById('htab-settings');
+    container.innerHTML = '<h2>Otel Ayarları</h2>' +
+      '<div class="card card-pad mt-16">' +
+      '<div class="form-grid cols-2">' +
+      '<div class="field"><label>Otel Adı</label><input type="text" value="' + esc(hotel.name) + '" disabled></div>' +
+      '<div class="field"><label>Bölge</label><input type="text" value="' + esc(hotel.region) + '" disabled></div>' +
+      '<div class="field"><label>Yıldız</label><input type="text" value="' + hotel.stars + '" disabled></div>' +
+      '<div class="field"><label>Toplam Oda</label><input type="text" value="' + hotel.hotelSummary.totalRooms + '" disabled></div>' +
+      '<div class="field full"><label>Olanaklar</label><div class="flex gap-8" style="flex-wrap:wrap;">' +
+      (hotel.amenities || []).map(function (a) { return '<span class="badge badge-muted">' + esc(a) + '</span>'; }).join('') +
+      '</div></div>' +
+      '</div>' +
+      '</div>';
+  }
+
+})();
+
+  </script>
+  <script>
+/* ---- assets/admin.js (inline) ---- */
+/*
+ * OdaDrop — admin.html sayfa mantığı.
+ * Tüm iş kuralları / sayı hesaplamaları window.OdaDrop (state.js) üzerinden
+ * yapılır; burada sadece ekran/etkileşim mantığı ve basit görüntü
+ * biçimlendirmesi (yuvarlama, € öneki) vardır.
+ */
+(function () {
+  'use strict';
+
+  var OD = window.OdaDrop;
+
+  var state = {
+    tab: 'dashboard'
+  };
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    bindStaticEvents();
+    render();
+  }
+
+  // ---------------- helpers ----------------
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function statCard(label, value) {
+    return '<div class="stat-card"><div class="stat-label">' + esc(String(label)) + '</div>' +
+      '<div class="stat-value">' + esc(String(value)) + '</div></div>';
+  }
+
+  function showToast(msg, type) {
+    var wrap = document.getElementById('toastWrap');
+    var t = document.createElement('div');
+    t.className = 'toast' + (type === 'danger' ? ' toast-danger' : type === 'success' ? ' toast-success' : '');
+    t.textContent = msg;
+    wrap.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () {
+      t.classList.remove('show');
+      setTimeout(function () { if (t.parentNode) wrap.removeChild(t); }, 300);
+    }, 3500);
+  }
+
+  // ---------------- top-level render ----------------
+
+  function render() {
+    var user = OD.getActiveUser();
+    if (user && user.role === 'ADMIN') {
+      showDashboard();
+    } else {
+      showLogin();
+    }
+  }
+
+  function showLogin() {
+    document.getElementById('adminLoginView').classList.remove('hidden');
+    document.getElementById('adminDashboardView').classList.add('hidden');
+    document.getElementById('adminNavRight').innerHTML = '';
+  }
+
+  function showDashboard() {
+    document.getElementById('adminLoginView').classList.add('hidden');
+    document.getElementById('adminDashboardView').classList.remove('hidden');
+    var user = OD.getActiveUser();
+    var adminNavRight = document.getElementById('adminNavRight');
+    adminNavRight.innerHTML =
+      '<span class="badge badge-muted">' + esc(user.name) + '</span>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="adminLogoutBtn">Çıkış yap</button>';
+    document.getElementById('adminLogoutBtn').addEventListener('click', function () {
+      OD.setActiveUser(null);
+      render();
+    });
+    switchTab(state.tab || 'dashboard');
+  }
+
+  function bindStaticEvents() {
+    document.getElementById('adminLoginBtn').addEventListener('click', function () {
+      OD.setActiveUser({ role: 'ADMIN', name: 'OdaDrop Admin' });
+      render();
+    });
+    document.getElementById('adminTabBar').addEventListener('click', function (e) {
+      var btn = e.target.closest('.chip');
+      if (!btn) return;
+      switchTab(btn.dataset.tab);
+    });
+  }
+
+  function switchTab(tabName) {
+    state.tab = tabName;
+    document.querySelectorAll('#adminTabBar .chip').forEach(function (c) {
+      c.classList.toggle('active', c.dataset.tab === tabName);
+    });
+    var panels = {
+      dashboard: 'atab-dashboard',
+      hotels: 'atab-hotels',
+      compliance: 'atab-compliance',
+      bookings: 'atab-bookings',
+      revenue: 'atab-revenue'
+    };
+    Object.keys(panels).forEach(function (key) {
+      document.getElementById(panels[key]).classList.toggle('hidden', key !== tabName);
+    });
+    if (tabName === 'dashboard') renderDashboardTab();
+    if (tabName === 'hotels') renderHotelsTab();
+    if (tabName === 'compliance') renderComplianceTab();
+    if (tabName === 'bookings') renderBookingsTab();
+    if (tabName === 'revenue') renderRevenueTab();
+  }
+
+  // ---------------- Dashboard tab ----------------
+
+  function renderDashboardTab() {
+    var stats = OD.computeAdminStats();
+    var container = document.getElementById('atab-dashboard');
+    container.innerHTML = '<h2>Dashboard</h2><div class="stat-grid mt-16">' +
+      statCard('Aktif Oteller', stats.activeHotels) +
+      statCard('Aktif Flash Sale', stats.activeFlashSales) +
+      statCard('Bugünkü Rezervasyon', stats.todaysBookingsCount) +
+      statCard('Bugünkü GMV', '€' + stats.todaysGMV) +
+      statCard('OdaDrop Geliri', '€' + stats.todaysCommission) +
+      '</div>';
+  }
+
+  // ---------------- Otel Yönetimi tab ----------------
+
+  function renderHotelsTab() {
+    var hotels = OD.allHotelsAdminView();
+    var container = document.getElementById('atab-hotels');
+
+    var rows = hotels.map(function (h) {
+      var badge = h.active
+        ? '<span class="badge badge-success">Aktif</span>'
+        : '<span class="badge badge-muted">Pasif</span>';
+      return '<tr>' +
+        '<td>' + esc(h.name) + '</td>' +
+        '<td>' + esc(h.region) + '</td>' +
+        '<td>' + h.stars + '</td>' +
+        '<td>' + h.flashRooms + '</td>' +
+        '<td>%' + h.occupancyPct + '</td>' +
+        '<td>' + badge + '</td>' +
+        '<td><button type="button" class="btn btn-sm btn-outline hotel-toggle" data-id="' + esc(h.id) + '">' +
+        (h.active ? 'Pasifleştir' : 'Aktifleştir') + '</button></td>' +
+        '</tr>';
+    }).join('');
+
+    container.innerHTML = '<h2>Otel Yönetimi</h2>' +
+      '<div class="table-wrap mt-16"><table class="table"><thead><tr>' +
+      '<th>Otel</th><th>Bölge</th><th>Yıldız</th><th>Flash Oda</th><th>Doluluk</th><th>Durum</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+    container.querySelectorAll('.hotel-toggle').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var hotel = OD.toggleHotelActive(btn.dataset.id);
+        if (hotel) showToast(hotel.name + (hotel.active ? ' aktifleştirildi.' : ' pasifleştirildi.'), hotel.active ? 'success' : 'danger');
+        renderHotelsTab();
+      });
+    });
+  }
+
+  // ---------------- Fiyat Kontrolü tab ----------------
+
+  function renderComplianceTab() {
+    var list = OD.priceCompliance();
+    var container = document.getElementById('atab-compliance');
+
+    if (list.length === 0) {
+      container.innerHTML = '<h2>Fiyat Kontrolü</h2><div class="empty-state">Henüz flash sale oluşturulmadı.</div>';
+      return;
+    }
+
+    var rows = list.map(function (item) {
+      var badge = item.compliant
+        ? '<span class="badge badge-success">✅ UYGUN</span>'
+        : '<span class="badge badge-danger">❌ UYGUN DEĞİL</span>';
+      var reason = item.compliant ? '' : '<div class="text-sm text-muted mt-8">Minimum %30 indirim şartı sağlanmıyor.</div>';
+      return '<tr>' +
+        '<td>' + esc(item.hotelName) + '<br><span class="text-sm text-muted">' + esc(item.roomType) + '</span></td>' +
+        '<td>€' + item.referencePrice + '</td>' +
+        '<td>€' + item.price + '</td>' +
+        '<td>€' + item.maxAllowed + '</td>' +
+        '<td>' + badge + reason + '</td>' +
+        '</tr>';
+    }).join('');
+
+    container.innerHTML = '<h2>Fiyat Kontrolü</h2>' +
+      '<div class="table-wrap mt-16"><table class="table"><thead><tr>' +
+      '<th>Hotel</th><th>Reference Price</th><th>Flash Price</th><th>Minimum</th><th>Durum</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // ---------------- Rezervasyonlar tab ----------------
+
+  function renderBookingsTab() {
+    var db = OD.getDb();
+    var bookings = db.bookings || [];
+    var container = document.getElementById('atab-bookings');
+
+    if (bookings.length === 0) {
+      container.innerHTML = '<h2>Rezervasyonlar</h2><div class="empty-state">Henüz rezervasyon yok.</div>';
+      return;
+    }
+
+    var rows = bookings.map(function (b) {
+      return '<tr>' +
+        '<td>' + esc(b.id) + '</td>' +
+        '<td>' + esc(b.guestName) + '</td>' +
+        '<td>' + esc(b.hotelName) + '</td>' +
+        '<td>' + esc(b.roomType) + '</td>' +
+        '<td>' + esc(b.checkInLabel) + '</td>' +
+        '<td>€' + b.unitPrice + '</td>' +
+        '<td>€' + b.commission + '</td>' +
+        '<td><span class="badge badge-success">' + esc(b.status) + '</span></td>' +
+        '</tr>';
+    }).join('');
+
+    container.innerHTML = '<h2>Rezervasyonlar</h2>' +
+      '<div class="table-wrap mt-16"><table class="table"><thead><tr>' +
+      '<th>Booking ID</th><th>Müşteri</th><th>Otel</th><th>Oda</th><th>Tarih</th><th>Flash Price</th><th>Commission</th><th>Status</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  // ---------------- Revenue Dashboard tab ----------------
+
+  function renderRevenueTab() {
+    var stats = OD.computeAdminStats();
+    var container = document.getElementById('atab-revenue');
+    container.innerHTML = '<h2>Bugün</h2><div class="stat-grid mt-16">' +
+      statCard('GMV', '€' + stats.todaysGMV) +
+      statCard('OdaDrop Revenue', '€' + stats.todaysCommission) +
+      statCard('Bookings', stats.todaysBookingsCount) +
+      statCard('Average Booking', '€' + stats.avgBooking) +
+      statCard('Average Discount', '%' + stats.avgDiscount) +
+      '</div>';
+  }
+
+})();
+
+  </script>
+  <script>
+/* ---- assets/app-shell.js (inline) ---- */
+/*
+ * OdaDrop — tek sayfa kabuğu (app shell).
+ * index.html artık Fırsatlar / Otel Paneli / Admin görünümlerinin ÜÇÜNÜ de
+ * tek DOM içinde barındırır (bkz. #view-customer / #view-hotel / #view-admin).
+ * Bu dosya SADECE hangi görünümün görünür olduğunu yönetir; iş mantığı ve
+ * her görünümün kendi render/etkileşim kodu index.js / hotel.js / admin.js
+ * içinde değişmeden kalır (onlar kendi DOMContentLoaded'larında normal
+ * şekilde çalışmaya devam eder — bu dosya sadece görünürlük anahtarıdır).
+ */
+(function () {
+  'use strict';
+
+  var VIEWS = ['customer', 'hotel', 'admin'];
+
+  function showTab(name) {
+    if (VIEWS.indexOf(name) === -1) name = 'customer';
+
+    VIEWS.forEach(function (v) {
+      var el = document.getElementById('view-' + v);
+      if (el) el.classList.toggle('active', v === name);
+    });
+
+    document.querySelectorAll('#appTabs [data-app-tab]').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-app-tab') === name);
+    });
+    var bottomDeals = document.getElementById('bottomNavDeals');
+    if (bottomDeals) bottomDeals.classList.toggle('active', name === 'customer');
+
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    try { window.location.hash = name === 'customer' ? '' : name; } catch (e) { /* file:// bazı tarayıcılarda hash yazımını kısıtlayabilir */ }
+  }
+
+  function wireTabButtons() {
+    document.querySelectorAll('[data-app-tab]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        showTab(el.getAttribute('data-app-tab'));
+      });
+    });
+  }
+
+  function initialTabFromHash() {
+    var hash = (window.location.hash || '').replace('#', '');
+    if (VIEWS.indexOf(hash) !== -1) return hash;
+    return 'customer';
+  }
+
+  window.OdaDropApp = { showTab: showTab };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    wireTabButtons();
+    showTab(initialTabFromHash());
+  });
+})();
+
+  </script>
+</body>
+</html>
